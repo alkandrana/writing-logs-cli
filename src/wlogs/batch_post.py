@@ -1,5 +1,5 @@
-from api import *
-from datetime import datetime, date, time, timedelta
+from src.wlogs.utils.api import *
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import csv
 
@@ -40,12 +40,6 @@ def post_session_from_file(session: dict[str, Any]):
         print(e)
         print(e.response.json())
 
-# failed = [
-#     {'id': 4, 'cause': 'missing stop time'},
-#     {'id': 7, 'cause': 'missing stop time'},
-# ]
-# 500: 120, 49, 18, 12
-# 400: 103,
 def get_sessions(filename: str):
     # get data from file
     data = []

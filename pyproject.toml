@@ -8,7 +8,7 @@ dependencies = [
 ]
 
 [project.scripts]
-wlogs = "wlogs.cli:main"
+wlogs = "wlogs.main:main"
 
 [build-system]
 requires = ["setuptools"]
