@@ -4,10 +4,10 @@ import os
 from pathlib import Path
 import argparse
 
-DEFAULT_BASE_URL = "http://localhost:8081"
-
+API_URL = "http://localhost:8081"
+HOME_DIR = Path.home()
 def base_url() -> str:
-    return os.getenv("WLOGS_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
+    return os.getenv("WLOGS_BASE_URL", API_URL).rstrip("/")
 
 def state_path() -> Path:
     # Prefer XDG_STATE_HOME; fallback to ~/.local/state; then ~/.wlogs if needed.

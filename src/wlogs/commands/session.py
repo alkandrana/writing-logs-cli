@@ -15,7 +15,7 @@ def cmd_start(args: argparse.Namespace) -> None:
     data: dict[str, Any] = {
         "sceneCode": args.scene,
         "startTime": now_iso(),
-        "date": datetime.now().date()
+        "date": datetime.now().date().strftime("%Y-%m-%d"),
     }
     if args.start_words is not None:
         data["startWords"] = args.start_words
@@ -87,7 +87,7 @@ def cmd_stop(args: argparse.Namespace) -> None:
     # Only clear state if the POST succeeded
     clear_state(path)
     # Friendly output
-    print(f"Submitted: {data["scene"]} | {payload['words']} words | {data["start_time"]}")
+    print(f"Submitted: {data["sceneCode"]} | {payload['words']} words | {data["start_time"]}")
     print(created)
 
 def session_parser(parser) -> argparse.ArgumentParser:
