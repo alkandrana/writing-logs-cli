@@ -1,5 +1,6 @@
 # Created by Rosa Lee Myers, 2026-03-14
 from pathlib import Path
+from ..utils.api import *
 def new_scene(args):
     proj = args.book_id
     novel_root = f"novels/{proj}"
@@ -28,3 +29,19 @@ def new_scene(args):
     with open(f"{scene_dir}/{scene_id}.md", "w") as f:
         f.write(header)
 
+def cmd_update_scene_status(args):
+    status = args.status
+    payload = {
+        "status": status
+    }
+    updated = send_patch_request(payload, f"scenes/{args.scene}")
+    print(f"Updated scene status for {args.scene}: {updated['status']}")
+    print(updated)
+
+def parse_scene(subparsers):
+    scene_parser = subparsers.add_parser("scene")
+    scene_subparsers = scene_parser.add_subparsers(dest="command")
+    update_parser = scene_subparsers.add_parser("update", help="Update scene details")
+    update_parser.add_argument("--scene", required=True, help="Scene code")
+    update_parser.add_argument("--status", required=True, help="Scene status")
+    update_parser.set_defaults(func=cmd_update_scene_status)

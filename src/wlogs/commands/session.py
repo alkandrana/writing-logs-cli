@@ -75,9 +75,12 @@ def cmd_stop(args: argparse.Namespace) -> None:
         add_scene = input("Would you like to create it? (y/n) ")
         if add_scene == "y":
             name = input("Scene Name: ")
+            project = input("Project Title: ")
             scene_data = {
                 "code": payload["sceneCode"],
                 "sceneName": name,
+                "bookCode": project,
+                "statusName": "Writing"
             }
             post_results(scene_data, "scenes")
         else:
@@ -87,11 +90,10 @@ def cmd_stop(args: argparse.Namespace) -> None:
     # Only clear state if the POST succeeded
     clear_state(path)
     # Friendly output
-    print(f"Submitted: {data["sceneCode"]} | {payload['words']} words | {data["start_time"]}")
+    print(f"Submitted: {data["sceneCode"]} | {payload['words']} words | {data["startTime"]}")
     print(created)
 
-def session_parser(parser) -> argparse.ArgumentParser:
-    subparsers = parser.add_subparsers(dest='command', required=True)
+def session_parser(subparsers):
     session_parser = subparsers.add_parser("session")
     session_subparsers = session_parser.add_subparsers(dest='command')
     start_parser = session_subparsers.add_parser("start", help="Start a writing session (stores local state)")
@@ -109,5 +111,3 @@ def session_parser(parser) -> argparse.ArgumentParser:
     stop_parser.add_argument("--stop-words", type=int, default=None, help="Stopping words count (delta computed if startWords exists)")
     stop_parser.add_argument("--words", type=int, default=None, help="Words written (direct)")
     stop_parser.set_defaults(func=cmd_stop)
-
-    return parser

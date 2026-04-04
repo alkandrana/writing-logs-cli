@@ -2,7 +2,6 @@
 from __future__ import annotations
 import os
 from pathlib import Path
-import argparse
 
 API_URL = "http://localhost:8081"
 HOME_DIR = Path.home()
@@ -20,7 +19,3 @@ def state_path() -> Path:
     path = root / "wlogs" / "current_session.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog='wlogs')
-    return parser

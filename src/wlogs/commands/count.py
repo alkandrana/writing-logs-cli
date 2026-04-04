@@ -1,8 +1,10 @@
 # Created by Rosa Lee Myers, 2026-02-22
 # Assumes an .md scene file with a yaml header
 import re
-from pathlib import Path
-def count_scene(filename):
+from ..utils.file_lib import *
+from ..utils.api import send_patch_request
+
+def count_words(filename):
     pattern = r'\b[a-zA-z-\'’]\b'
     with open(filename) as f:
         count = 0
@@ -30,3 +32,19 @@ def get_scene(key, root, scene):
     scene_area = find_file(key, root)
     scene = find_file(scene, scene_area)
     return scene
+
+def cmd_update_scene_count(args):
+    word_count = count_scene(args.scene)
+    payload = {
+        "words": word_count
+    }
+    updated = send_patch_request(payload, f"scenes/{args.scene}")
+    print(f"Updated scene count for {args.scene}: {payload['words']}")
+    print(updated)
+
+def count_parser(subparsers):
+    count_parser = subparsers.add_parser("count")
+    count_subparsers = count_parser.add_subparsers(dest="command")
+    scene_parser = count_subparsers.add_parser("scene", help="Update word count for a scene")
+    scene_parser.add_argument("--scene", required=True, help="Scene code (e.g., DGP-DBT")
+    scene_parser.set_defaults(func=cmd_update_scene_count)
