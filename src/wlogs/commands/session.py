@@ -3,6 +3,16 @@ from ..config import *
 from ..utils.data_lib import *
 from ..utils.api import *
 
+# wlogs session start --scene AKT-LTN [--start_words 499]
+# start_session():
+#    if session_in_progress():
+#       print(f"A session is already in progress: {session_in_progress()}")
+#       output_usage()
+#   else:
+#       data = get_start_data()
+#       write_to_file(data)
+#       print(f"Session started: {data}")
+
 def cmd_start(args: argparse.Namespace) -> None:
     path = state_path()
     current = load_state(path)
@@ -26,6 +36,12 @@ def cmd_start(args: argparse.Namespace) -> None:
         msg += f" (startWords {data['startWords']})"
     print(msg)
 
+# wlogs session status
+# session_status():
+#   if session_in_progress():
+#       print(f"Current session: {session_in_progress()}")
+#   else:
+#       print("No session currently running.")
 def cmd_status(_: argparse.Namespace) -> None:
     path = state_path()
     data = load_state(path)
@@ -43,6 +59,11 @@ def cmd_status(_: argparse.Namespace) -> None:
     if start_words is not None:
         print(f"    startWords: {start_words}")
 
+# wlogs session cancel
+# cancel_session():
+    # data = get_file_data()
+    # remove_file_data()
+    # print(f"Canceled session: {data}")
 def cmd_cancel(_: argparse.Namespace) -> None:
     path = state_path()
     if not path.exists():
@@ -51,6 +72,13 @@ def cmd_cancel(_: argparse.Namespace) -> None:
     data = load_state(path)
     clear_state(path)
     print(f"Canceled session: {data.get('sceneCode', '?')} @ {data.get('startTime', '?')}")
+
+# wlogs session stop
+# stop_session():
+#   data = get_file_data()
+#   words = get_words()
+#   payload = convert_to_session()
+#   post_session()
 
 def cmd_stop(args: argparse.Namespace) -> None:
     path = state_path()
@@ -75,7 +103,7 @@ def cmd_stop(args: argparse.Namespace) -> None:
         add_scene = input("Would you like to create it? (y/n) ")
         if add_scene == "y":
             name = input("Scene Name: ")
-            project = input("Project Title: ")
+            project = input("Project ID: ")
             scene_data = {
                 "code": payload["sceneCode"],
                 "sceneName": name,

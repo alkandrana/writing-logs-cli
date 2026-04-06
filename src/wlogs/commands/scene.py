@@ -1,6 +1,7 @@
 # Created by Rosa Lee Myers, 2026-03-14
 from pathlib import Path
 from ..utils.api import *
+from ..utils.file_lib import *
 def new_scene(args):
     proj = args.book_id
     novel_root = f"novels/{proj}"
@@ -31,6 +32,11 @@ def new_scene(args):
 
 def cmd_update_scene_status(args):
     status = args.status
+    if status == "finished":
+        summarize = input("Add a summary? (y/n): ")
+        if summarize == "y":
+            book_id = input("Enter project id: ")
+            update_scene_data(book_id, args.scene)
     payload = {
         "status": status
     }

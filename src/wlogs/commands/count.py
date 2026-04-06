@@ -34,7 +34,8 @@ def get_scene(key, root, scene):
     return scene
 
 def cmd_update_scene_count(args):
-    word_count = count_scene(args.scene)
+    header = get_yaml_header(args.scene)
+    word_count = header["word_count"]
     payload = {
         "words": word_count
     }

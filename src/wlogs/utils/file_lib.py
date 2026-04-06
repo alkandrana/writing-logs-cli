@@ -4,7 +4,7 @@ from typing import Any
 import json
 import yaml
 
-ROOT_DIR = "/Users/rosamyers/repos"
+ROOT_DIR = Path.home() / "repos"
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
@@ -40,31 +40,71 @@ def show_projects(project: str) -> str:
         print("No projects found. Check your project designation and try again.")
         sys.exit(0)
 
-def validate_file_list(path, filename, message):
-    options = [f for f in Path(path).rglob("*" + filename + "*")]
+def validate_file_list(filelist):
     output = ""
-    if len(options) == 1:
-        output = options[0]
-    elif len(options) > 1:
-        print(f"{message} Select the corresponding number:")
-        for i, option in enumerate(options):
+    if len(filelist) == 1:
+        output = filelist[0]
+    elif len(filelist) > 1:
+        print("Multiple files match your search criteria. Select the corresponding number:")
+        for i, option in enumerate(filelist):
             print(f"{i}. {option}")
         choice = input("Select number: ")
-        output = options[int(choice)]
+        output = filelist[int(choice)]
     else:
         print("No options found. Check your input and try again.")
         sys.exit(0)
     return output
 
 def list_scenes(scene_code):
-    scene = validate_file_list(ROOT_DIR, scene_code, f"Multiple scenes match your search criteria.")
-    return scene
-def count_scene(scene_code: str) -> int:
+    files = [f for f in Path(ROOT_DIR).rglob(f"*{scene_code}*")]
+    scene_path = validate_file_list(files)
+    return scene_path
+def get_yaml_header(scene_code: str) -> dict[str, Any]:
     scene_path = list_scenes(scene_code)
     with open(scene_path, "r") as f:
         content = f.read()
-        parts = content.split("---")
-        header = parts[1]
-        header_dict = yaml.safe_load(header)
-    return header_dict["word_count"]
+    parts = content.split("---")
+    yaml_str = parts[1]
+    header_dict = yaml.safe_load(yaml_str)
+    return header_dict
 
+def convert_to_json(yaml_header, novel_id):
+    options = [f for f in Path(ROOT_DIR).rglob(novel_id)]
+    novel_path = validate_file_list(options)
+    json_path = Path(novel_path / "novel.json")
+    if json_path.exists():
+        with open(json_path, "r") as f:
+            novel_dict = json.load(f)
+    else:
+        novel_dict = {
+            "book_id": novel_id,
+            "title": "",
+            "volume": 0,
+            "structure": "",
+            "target_wc": 100000,
+            "status": "draft",
+            "summary": "",
+            "scenes": []
+        }
+    novel_dict["scenes"].append(yaml_header)
+    with open(json_path, "w") as f:
+        json.dump(novel_dict, f, indent=2, sort_keys=True)
+
+def validate_yaml_header(yaml_header: dict[str, Any]):
+    for key, value in yaml_header.items():
+        if not yaml_header[key] and key == "summary":
+            input_prop = input("Input (the state of the characters at the beginning of the scene): ")
+            process_prop = input("Process (what happens in the scene): ")
+            output_prop = input("Output (the change in the 'state' of the story by the end of the scene): ")
+            yaml_header[key] = {
+                "Input": input_prop,
+                "Process": process_prop,
+                "Output": output_prop
+            }
+
+def update_scene_data(book_id: str, scene_id: str):
+    header_dict = get_yaml_header(scene_id)
+    print(header_dict)
+    validate_yaml_header(header_dict)
+    print(header_dict)
+    convert_to_json(header_dict, book_id)
