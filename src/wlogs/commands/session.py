@@ -2,18 +2,20 @@ from ..utils.file_lib import *
 from ..config import *
 from ..utils.data_lib import *
 from ..utils.api import *
+import sys
 
 # wlogs session start --scene AKT-LTN [--start_words 499]
-# start_session():
+# def start_session():
 #    if session_in_progress():
-#       print(f"A session is already in progress: {session_in_progress()}")
-#       output_usage()
+#       print(f"A session is already in progress: {load_session_data()}")
+#       print()
 #   else:
 #       data = get_start_data()
 #       write_to_file(data)
 #       print(f"Session started: {data}")
 
 def cmd_start(args: argparse.Namespace) -> None:
+    print(Path(sys.argv[0]).name)
     path = state_path()
     current = load_state(path)
     if current:
@@ -73,12 +75,19 @@ def cmd_cancel(_: argparse.Namespace) -> None:
     clear_state(path)
     print(f"Canceled session: {data.get('sceneCode', '?')} @ {data.get('startTime', '?')}")
 
-# wlogs session stop
+# wlogs session stop --words 566
 # stop_session():
-#   data = get_file_data()
-#   words = get_words()
+#   words = int(args.words)
+#   data = load_session_data()
+#   if args.diff:
+#       if data["start_words"]:
+#           words = words - data["start_words"]
+#       else:
+#           print("Words could not be calculated because start_words not found.")
+#           sys.exit(1)
 #   payload = convert_to_session()
-#   post_session()
+#   result = post_session()
+#   print(f"Submitted: {result}")
 
 def cmd_stop(args: argparse.Namespace) -> None:
     path = state_path()
@@ -136,6 +145,7 @@ def session_parser(subparsers):
     cancel_parser.set_defaults(func=cmd_cancel)
 
     stop_parser = session_subparsers.add_parser("stop", help="Stop the current session and POST it to the API")
-    stop_parser.add_argument("--stop-words", type=int, default=None, help="Stopping words count (delta computed if startWords exists)")
-    stop_parser.add_argument("--words", type=int, default=None, help="Words written (direct)")
+    stop_parser.add_argument("-d", "--diff", action="store_true", help="Calculate words as difference between --words and --start-words (--start-words argument must have been used when session was started).")
+    stop_parser.add_argument("--words", required=True, type=int, default=None, help="Words written (direct)")
     stop_parser.set_defaults(func=cmd_stop)
+    session_parser.print_help()

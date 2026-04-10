@@ -3,8 +3,24 @@ from pathlib import Path
 from typing import Any
 import json
 import yaml
+from wlogs.config import state_path
 
 ROOT_DIR = Path.home() / "repos"
+
+def load_session_data():
+    path = state_path()
+    if path.exists():
+        with open(path, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {}
+    return data
+
+def session_in_progress():
+    if load_session_data():
+        return True
+    else:
+        return False
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
