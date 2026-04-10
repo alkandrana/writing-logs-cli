@@ -15,6 +15,7 @@ def scene_exists(code: str) -> bool:
     if r.status_code == 404:
         return False
     r.raise_for_status()
+
 def send_post_request(payload: dict,  endpoint: str) -> dict:
     # POST /sessions with JSON body. Returns parsed JSON response.
     # Raises requests exceptions on errors.

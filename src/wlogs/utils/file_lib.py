@@ -5,7 +5,7 @@ import json
 import yaml
 from wlogs.config import state_path
 
-ROOT_DIR = Path.home() / "repos"
+ROOT_DIR = Path.home()
 
 def load_session_data():
     path = state_path()
@@ -21,6 +21,25 @@ def session_in_progress():
         return True
     else:
         return False
+
+def store_local_session(session, log_name):
+    path = list_scenes(log_name)
+    columns = get_last_line(path).split(",")
+
+    next_id = int(columns[0]) + 1
+    row = f"{next_id},{session["date"]},{session["startTime"]},{session["stopTime"]},{session["sceneCode"]},{session["words"]},"
+    with open(path, 'a') as f:
+        f.write(row)
+    return row
+
+def get_last_line(path):
+    with open(path, 'r') as f:
+        last_line = None
+        for line in f:
+            if line.strip():
+                last_line = line
+    return last_line
+
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
@@ -41,9 +60,8 @@ def get_novel_directory():
     else:
         return str(projects_home)
 
-def show_projects(project: str) -> str:
-    novel_dir = get_novel_directory()
-    projects = [f for f in Path(novel_dir).rglob(project) if f.is_dir() and "novels" in str(f.parent)]
+def show_projects(project_id: str) -> str:
+    projects = [f for f in Path(Path.home()).rglob(project_id) if f.is_dir() and "novels" in str(f.parent)]
     if len(projects) == 1:
         return str(projects[0])
     elif len(projects) > 1:
@@ -75,6 +93,7 @@ def list_scenes(scene_code):
     files = [f for f in Path(ROOT_DIR).rglob(f"*{scene_code}*")]
     scene_path = validate_file_list(files)
     return scene_path
+
 def get_yaml_header(scene_code: str) -> dict[str, Any]:
     scene_path = list_scenes(scene_code)
     with open(scene_path, "r") as f:

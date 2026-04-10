@@ -4,6 +4,7 @@ from ..utils.data_lib import *
 from ..utils.api import *
 import sys
 
+LOG_FILE = "master-writing-log"
 # wlogs session start --scene AKT-LTN [--start_words 499]
 # def start_session():
 #    if session_in_progress():
@@ -76,18 +77,22 @@ def cmd_cancel(_: argparse.Namespace) -> None:
     print(f"Canceled session: {data.get('sceneCode', '?')} @ {data.get('startTime', '?')}")
 
 # wlogs session stop --words 566
-# stop_session():
-#   words = int(args.words)
-#   data = load_session_data()
-#   if args.diff:
-#       if data["start_words"]:
-#           words = words - data["start_words"]
-#       else:
-#           print("Words could not be calculated because start_words not found.")
-#           sys.exit(1)
-#   payload = convert_to_session()
-#   result = post_session()
-#   print(f"Submitted: {result}")
+def stop_session(args):
+    words = int(args.words)
+    data = load_session_data()
+    if args.diff:
+        if data["start_words"]:
+            words = words - data["start_words"]
+        else:
+            print("Words could not be calculated because start_words not found.")
+            sys.exit(1)
+    payload = convert_to_session(data, words)
+    endpoint = "http://localhost:8081/api/sessions"
+    if not args.local:
+        result = post_session(payload, endpoint)
+        print(f"Successfully posted session: {result}")
+    result = store_local_session(payload, LOG_FILE)
+    print(f"Recorded: {result}")
 
 def cmd_stop(args: argparse.Namespace) -> None:
     path = state_path()
@@ -146,6 +151,7 @@ def session_parser(subparsers):
 
     stop_parser = session_subparsers.add_parser("stop", help="Stop the current session and POST it to the API")
     stop_parser.add_argument("-d", "--diff", action="store_true", help="Calculate words as difference between --words and --start-words (--start-words argument must have been used when session was started).")
+    stop_parser.add_argument("--local", action="store_true", help="Record session only in local log file (not posted to API)")
     stop_parser.add_argument("--words", required=True, type=int, default=None, help="Words written (direct)")
-    stop_parser.set_defaults(func=cmd_stop)
-    session_parser.print_help()
+    stop_parser.set_defaults(func=stop_session)
+    # session_parser.print_help()

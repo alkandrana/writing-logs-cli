@@ -7,6 +7,16 @@ def now_iso() -> str:
     # ISO-8601 with local offset, seconds precision
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
+def convert_to_session(file_data: dict[str, Any], words: int):
+    session = {
+        "date": file_data["date"],
+        "startTime": file_data["startTime"],
+        "stopTime": now_iso(), 
+        "words": words,
+        "sceneCode": file_data["sceneCode"]
+    }
+    return session
+
 def format_elapsed(start_iso: str) -> str:
     try:
         start = datetime.fromisoformat(start_iso)

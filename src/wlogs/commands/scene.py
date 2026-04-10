@@ -3,8 +3,8 @@ from pathlib import Path
 from ..utils.api import *
 from ..utils.file_lib import *
 def new_scene(args):
-    proj = args.book_id
-    novel_root = f"novels/{proj}"
+    proj = args.book
+    novel_root = show_projects(proj)
     # novel_data = f"{novel_root}/novel.json"
     scene_dir = f"{novel_root}/manuscript/scenes/"
     scenes_path = Path(scene_dir)
@@ -51,3 +51,7 @@ def parse_scene(subparsers):
     update_parser.add_argument("--scene", required=True, help="Scene code")
     update_parser.add_argument("--status", required=True, help="Scene status")
     update_parser.set_defaults(func=cmd_update_scene_status)
+
+    create_parser = scene_subparsers.add_parser("create", help="Create new scene file with yaml header.")
+    create_parser.add_argument("--book", required=True, help="ID of the novel in whic to create the scene (e.g., SOD)")
+    create_parser.set_defaults(func=new_scene)
