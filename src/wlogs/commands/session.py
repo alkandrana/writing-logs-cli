@@ -1,96 +1,62 @@
+import argparse
+import sys
 from ..utils.file_lib import *
 from ..config import *
 from ..utils.data_lib import *
 from ..utils.api import *
-import sys
+
+def print_dict(data: dict[str, Any]):
+    for key, value in data.items():
+        print(f"{key}: {value}")
 
 LOG_FILE = "master-writing-log"
+
 # wlogs session start --scene AKT-LTN [--start_words 499]
-# def start_session():
-#    if session_in_progress():
-#       print(f"A session is already in progress: {load_session_data()}")
-#       print()
-#   else:
-#       data = get_start_data()
-#       write_to_file(data)
-#       print(f"Session started: {data}")
-
-def cmd_start(args: argparse.Namespace) -> None:
-    print(Path(sys.argv[0]).name)
-    path = state_path()
-    current = load_state(path)
-    if current:
-        print("A session is already in progress:", file=sys.stderr)
-        print(f"    sceneCode:  {current.get('sceneCode')}", file=sys.stderr)
-        print(f"    startTime:  {current.get('startTime')} (elapsed {format_elapsed(current.get('startTime',''))})", file=sys.stderr)
-        print("Use `wlogs cancel` to discard it, or `wlogs stop` to submit it.", file=sys.stderr)
-        sys.exit(2)
-    data: dict[str, Any] = {
-        "sceneCode": args.scene,
-        "startTime": now_iso(),
-        "date": datetime.now().date().strftime("%Y-%m-%d"),
-    }
-    if args.start_words is not None:
-        data["startWords"] = args.start_words
-
-    save_state(path, data)
-    msg = f"Started: {data['sceneCode']} @ {data['startTime']}"
-    if "startWords" in data:
-        msg += f" (startWords {data['startWords']})"
-    print(msg)
+def start_session(args):
+    if session_in_progress():
+        print(f"A session is already in progress: ")
+        print_dict(load_session_data())
+        print()
+        args.subparser.print_help()
+    else:
+        data = {
+            "scene_code": args.scene,
+            "start_time": now_iso(),
+            "date": datetime.now().date().strftime("%Y-%m-%d"),
+            "start_words": args.start_words
+        }
+        path = state_path()
+        write_json_to_file(path, data)
+        print(f"Session started:")
+        print_dict(load_session_data())
 
 # wlogs session status
-# session_status():
-#   if session_in_progress():
-#       print(f"Current session: {session_in_progress()}")
-#   else:
-#       print("No session currently running.")
-def cmd_status(_: argparse.Namespace) -> None:
-    path = state_path()
-    data = load_state(path)
-    if not data:
-        print("No session in progress.")
-        return
-
-    start_time = data.get("startTime", "?")
-    scene = data.get("sceneCode", "?")
-    start_words = data.get("startWords", None)
-
-    print(f"Session in progress:")
-    print(f"    sceneCode:  {scene}")
-    print(f"    startTime:  {start_time} (elapsed {format_elapsed(start_time)})")
-    if start_words is not None:
-        print(f"    startWords: {start_words}")
+def session_status(_):
+  if session_in_progress():
+      print(f"Current session:")
+      print_dict(load_session_data())
+  else:
+      print("No session currently running.")
 
 # wlogs session cancel
-# cancel_session():
-    # data = get_file_data()
-    # remove_file_data()
-    # print(f"Canceled session: {data}")
-def cmd_cancel(_: argparse.Namespace) -> None:
-    path = state_path()
-    if not path.exists():
-        print("No session to cancel.")
-        return
-    data = load_state(path)
-    clear_state(path)
-    print(f"Canceled session: {data.get('sceneCode', '?')} @ {data.get('startTime', '?')}")
+def cancel_session(_):
+    if not session_in_progress():
+        print("No session running.")
+    data = load_session_data()
+    remove_session_data(state_path())
+    print(f"Canceled session:")
+    print_dict(data)
 
 # wlogs session stop --words 566
 def stop_session(args):
-    words = int(args.words)
-    data = load_session_data()
-    if args.diff:
-        if data["start_words"]:
-            words = words - data["start_words"]
-        else:
-            print("Words could not be calculated because start_words not found.")
-            sys.exit(1)
+    data = validate_session(load_session_data())
+    words = args.words - int(data["start_words"])
+    remove_session_data(state_path())
     payload = convert_to_session(data, words)
-    endpoint = "http://localhost:8081/api/sessions"
     if not args.local:
-        result = post_session(payload, endpoint)
-        print(f"Successfully posted session: {result}")
+        result = send_post_request(payload, "sessions")
+        print(f"Successfully posted session:")
+        print_dict(result)
     result = store_local_session(payload, LOG_FILE)
     print(f"Recorded: {result}")
 
@@ -130,7 +96,7 @@ def cmd_stop(args: argparse.Namespace) -> None:
 
     created = post_results(payload, "sessions")
     # Only clear state if the POST succeeded
-    clear_state(path)
+    remove_session_data(path)
     # Friendly output
     print(f"Submitted: {data["sceneCode"]} | {payload['words']} words | {data["startTime"]}")
     print(created)
@@ -138,18 +104,18 @@ def cmd_stop(args: argparse.Namespace) -> None:
 def session_parser(subparsers):
     session_parser = subparsers.add_parser("session")
     session_subparsers = session_parser.add_subparsers(dest='command')
-    start_parser = session_subparsers.add_parser("start", help="Start a writing session (stores local state)")
+    start_parser = session_subparsers.add_parser("start", help="Start a writing session (stores local state, must be either caceled or saved before a new one can be started)")
     start_parser.add_argument("--scene", required=True, help="Scene code (e.g., AKT-JRM)")
-    start_parser.add_argument("--start-words", type=int, default=None, help="Starting word count (optional)")
-    start_parser.set_defaults(func=cmd_start)
+    start_parser.add_argument("--start-words", type=int, default=0, help="Starting word count (optional)")
+    start_parser.set_defaults(func=start_session, subparser=session_parser)
 
     status_parser = session_subparsers.add_parser("status", help="Show the currently running session")
-    status_parser.set_defaults(func=cmd_status)
+    status_parser.set_defaults(func=session_status)
 
     cancel_parser = session_subparsers.add_parser("cancel", help="Discard the currently running session")
-    cancel_parser.set_defaults(func=cmd_cancel)
+    cancel_parser.set_defaults(func=cancel_session)
 
-    stop_parser = session_subparsers.add_parser("stop", help="Stop the current session and POST it to the API")
+    stop_parser = session_subparsers.add_parser("stop", help="Stop the current session and save it")
     stop_parser.add_argument("-d", "--diff", action="store_true", help="Calculate words as difference between --words and --start-words (--start-words argument must have been used when session was started).")
     stop_parser.add_argument("--local", action="store_true", help="Record session only in local log file (not posted to API)")
     stop_parser.add_argument("--words", required=True, type=int, default=None, help="Words written (direct)")

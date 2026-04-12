@@ -4,14 +4,18 @@ from typing import Any
 import json
 import yaml
 from wlogs.config import state_path
+from wlogs.utils.data_lib import get_novel_parent
 
-ROOT_DIR = Path.home()
+# NOVEL_ROOT = get_novel_parent()
 
 def load_session_data():
     path = state_path()
     if path.exists():
-        with open(path, 'r') as f:
-            data = json.load(f)
+        try:
+            with open(path, 'r') as f:
+                data = json.load(f)
+        except json.decoder.JSONDecodeError:
+            data = {}
     else:
         data = {}
     return data
@@ -45,15 +49,19 @@ def load_state(path: Path) -> dict[str, Any]:
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
 
+def write_json_to_file(path: Path, data: dict[str, Any]):
+    with open(path, 'w') as f:
+        json.dump(data, f)
+
 def save_state(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-def clear_state(path: Path) -> None:
+def remove_session_data(path: Path) -> None:
     if path.exists():
         path.unlink()
 
 def get_novel_directory():
-    projects_home = Path(Path.home() / ROOT_DIR)
+    projects_home = Path(get_novel_parent())
     if not projects_home.exists():
         print("Could not resolve root directory. Make sure directory is in home folder and try again.")
         sys.exit(0)
@@ -90,7 +98,7 @@ def validate_file_list(filelist):
     return output
 
 def list_scenes(scene_code):
-    files = [f for f in Path(ROOT_DIR).rglob(f"*{scene_code}*")]
+    files = [f for f in Path(get_novel_parent()).rglob(f"*{scene_code}*")]
     scene_path = validate_file_list(files)
     return scene_path
 

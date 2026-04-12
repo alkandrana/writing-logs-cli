@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-API_URL = "http://localhost:8081"
+API_URL = "http://localhost:8081/api"
 HOME_DIR = Path.home()
 def base_url() -> str:
     return os.getenv("WLOGS_BASE_URL", API_URL).rstrip("/")

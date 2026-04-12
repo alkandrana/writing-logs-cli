@@ -1,6 +1,7 @@
 from datetime import datetime
 import sys
 from typing import Any
+from pathlib import Path
 
 ### DATES ###
 def now_iso() -> str:
@@ -10,10 +11,10 @@ def now_iso() -> str:
 def convert_to_session(file_data: dict[str, Any], words: int):
     session = {
         "date": file_data["date"],
-        "startTime": file_data["startTime"],
+        "startTime": file_data["start_time"],
         "stopTime": now_iso(), 
         "words": words,
-        "sceneCode": file_data["sceneCode"]
+        "sceneCode": file_data["scene_code"]
     }
     return session
 
@@ -70,10 +71,21 @@ def validate_words(start_words: int, stop_words: int, words: int) -> int:
 
 def validate_session(data: dict[str, Any]) -> dict[str, Any]:
     if not data:
-        print("No session in progress. Use `wlogs start --scene <CODE>` first.", file=sys.stderr)
+        print("No session in progress.", file=sys.stderr)
         sys.exit(2)
-    data["stopTime"] = now_iso()
-    if not data["sceneCode"] or not data["startTime"]:
+    data["stop_time"] = now_iso()
+    if not data["scene_code"] or not data["start_time"]:
         print("State file is missing sceneCode/startTime. Try `wlogs cancel` and start again.", file=sys.stderr)
         sys.exit(2)
     return data
+
+def get_novel_parent():
+    novels = [f for f in Path(Path.home()).rglob("novels")]
+    parents = [f for f in novels[0].parents]
+    novel_parent = parents[1]
+    for n in novels:
+        parents = [f for f in n.parents]
+        if novel_parent != parents[1]:
+            print("Novel path is not universal")
+            sys.exit(0)
+    return novel_parent
