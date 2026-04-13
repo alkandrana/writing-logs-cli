@@ -23,7 +23,11 @@ def new_scene(args):
               f"protagonist: {plotline}\n"
               f"status: draft\n"
               f"word_count: 0\n"
-              f"summary: null\n"
+              "summary: {\n"
+              "  Input: The state of the characters at the beginning of the scene.\n"
+              "  Process: What happens in the scene.\n"
+              "  Output: The change in the state of the story by the end of the scene.\n"
+              "}\n"
               f"---\n\n"
               f"# {scene_name}\n")
 
