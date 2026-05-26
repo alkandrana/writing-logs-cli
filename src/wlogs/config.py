@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 LOG_FILE = "master-writing-log"
 API_URL = "http://localhost:8081/api"
-HOME_DIR = Path.home()
+HOME_DIR = Path(Path.home() / "repos")
 def base_url() -> str:
     return os.getenv("WLOGS_BASE_URL", API_URL).rstrip("/")
 

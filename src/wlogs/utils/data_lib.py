@@ -2,6 +2,7 @@ from datetime import datetime
 import sys
 from typing import Any
 from pathlib import Path
+from ..config import HOME_DIR
 
 ### DATES ###
 
@@ -61,13 +62,3 @@ def validate_words(start_words: int, stop_words: int, words: int) -> int:
 
 
 
-def get_novel_parent():
-    novels = [f for f in Path(Path.home()).rglob("novels")]
-    parents = [f for f in novels[0].parents]
-    novel_parent = parents[1]
-    for n in novels:
-        parents = [f for f in n.parents]
-        if novel_parent != parents[1]:
-            print("Novel path is not universal")
-            sys.exit(0)
-    return novel_parent
