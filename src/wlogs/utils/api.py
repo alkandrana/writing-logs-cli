@@ -6,15 +6,14 @@ import requests
 from requests import HTTPError
 from typing import Any
 
-BASE_URL = "http://localhost:8081/api"
+BASE_URL = "http://localhost:3000"
 
 def scene_exists(code: str) -> bool:
-    r = requests.get(f"{BASE_URL}/scenes/{code}", timeout=5)
-    if r.status_code == 200:
+    r = requests.get(f"{BASE_URL}/scenes/code/{code}", timeout=5)
+    if r.status_code == 200 and len(r.json()) > 0:
         return True
-    if r.status_code == 404:
+    else:
         return False
-    r.raise_for_status()
 
 def send_post_request(payload: dict,  endpoint: str) -> dict:
     # POST /sessions with JSON body. Returns parsed JSON response.

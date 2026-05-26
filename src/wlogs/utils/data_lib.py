@@ -4,19 +4,9 @@ from typing import Any
 from pathlib import Path
 
 ### DATES ###
-def now_iso() -> str:
-    # ISO-8601 with local offset, seconds precision
-    return datetime.now().astimezone().isoformat(timespec="seconds")
 
-def convert_to_session(file_data: dict[str, Any], words: int):
-    session = {
-        "date": file_data["date"],
-        "startTime": file_data["start_time"],
-        "stopTime": now_iso(), 
-        "words": words,
-        "sceneCode": file_data["scene_code"]
-    }
-    return session
+
+
 
 def format_elapsed(start_iso: str) -> str:
     try:
@@ -69,15 +59,7 @@ def validate_words(start_words: int, stop_words: int, words: int) -> int:
         sys.exit(2)
     return words
 
-def validate_session(data: dict[str, Any]) -> dict[str, Any]:
-    if not data:
-        print("No session in progress.", file=sys.stderr)
-        sys.exit(2)
-    data["stop_time"] = now_iso()
-    if not data["scene_code"] or not data["start_time"]:
-        print("State file is missing sceneCode/startTime. Try `wlogs cancel` and start again.", file=sys.stderr)
-        sys.exit(2)
-    return data
+
 
 def get_novel_parent():
     novels = [f for f in Path(Path.home()).rglob("novels")]

@@ -3,39 +3,9 @@ from pathlib import Path
 from typing import Any
 import json
 import yaml
-from wlogs.config import state_path
 from wlogs.utils.data_lib import get_novel_parent
 
 # NOVEL_ROOT = get_novel_parent()
-
-def load_session_data():
-    path = state_path()
-    if path.exists():
-        try:
-            with open(path, 'r') as f:
-                data = json.load(f)
-        except json.decoder.JSONDecodeError:
-            data = {}
-    else:
-        data = {}
-    return data
-
-def session_in_progress():
-    if load_session_data():
-        return True
-    else:
-        return False
-
-def store_local_session(session, log_name):
-    path = list_scenes(log_name)
-    columns = get_last_line(path).split(",")
-
-    next_id = int(columns[0]) + 1
-    row = f"{next_id},{session["date"]},{session["startTime"]},{session["stopTime"]},{session["sceneCode"]},{session["words"]},"
-    with open(path, 'a') as f:
-        f.write(row)
-    return row
-
 def get_last_line(path):
     with open(path, 'r') as f:
         last_line = None
@@ -49,16 +19,12 @@ def load_state(path: Path) -> dict[str, Any]:
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
 
-def write_json_to_file(path: Path, data: dict[str, Any]):
-    with open(path, 'w') as f:
-        json.dump(data, f)
+
 
 def save_state(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-def remove_session_data(path: Path) -> None:
-    if path.exists():
-        path.unlink()
+
 
 def get_novel_directory():
     projects_home = Path(get_novel_parent())
@@ -112,7 +78,7 @@ def get_yaml_header(scene_code: str) -> dict[str, Any]:
     return header_dict
 
 def convert_to_json(yaml_header, novel_id):
-    options = [f for f in Path(ROOT_DIR).rglob(novel_id)]
+    options = [f for f in Path(Path.home() / "repos").rglob(novel_id)]
     novel_path = validate_file_list(options)
     json_path = Path(novel_path / "novel.json")
     if json_path.exists():
