@@ -1,62 +1,65 @@
 # Created by Rosa Lee Myers 2026-02-14 with help from ChatGPT
-import csv
 import sys
 
 import requests
-from requests import HTTPError
 from typing import Any
 
-BASE_URL = "http://localhost:3000"
 
-def scene_exists(code: str) -> bool:
-    r = requests.get(f"{BASE_URL}/scenes/code/{code}", timeout=5)
-    if r.status_code == 200 and len(r.json()) > 0:
-        return True
-    else:
-        return False
+class Api:
+    def __init__(self, url) -> None:
+        self.api_url = url
 
-def send_post_request(payload: dict,  endpoint: str) -> dict:
-    # POST /sessions with JSON body. Returns parsed JSON response.
-    # Raises requests exceptions on errors.
-    url = f"{BASE_URL}/{endpoint}"
-    res = requests.post(url, json=payload, timeout=10)
-    res.raise_for_status()
-    return res.json()
+    def record_exists(self, endpoint, code) -> bool:
+        r = requests.get(f"{self.api_url}/{endpoint}/{code}", timeout=5)
+        if r.status_code == 200 and len(r.json()) > 0:
+            return True
+        else:
+            return False
 
-def send_patch_request(payload: dict, endpoint: str) -> dict:
-    url = f"{BASE_URL}/{endpoint}"
-    res = requests.patch(url, json=payload, timeout=10)
-    res.raise_for_status()
-    return res.json()
+    def send_post_request(self, payload, endpoint) -> dict:
+        # POST /sessions with JSON body. Returns parsed JSON response.
+        # Raises requests exceptions on errors.
+        url = f"{self.api_url}/{endpoint}"
+        res = requests.post(url, json=payload, timeout=10)
+        res.raise_for_status()
+        return res.json()
 
-def handle_post_errors(e):
-    r = e.response
-    if r is None:
-        print("API error.", file=sys.stderr)
-    else:
+    def send_patch_request(self, payload, endpoint) -> dict:
+        url = f"{self.api_url}/{endpoint}"
+        res = requests.patch(url, json=payload, timeout=10)
+        res.raise_for_status()
+        return res.json()
+
+    def handle_post_errors(self, e):
+        r = e.response
+        if r is None:
+            print("API error.", file=sys.stderr)
+        else:
+            try:
+                msg = r.json().get("message") or r.text
+            except ValueError:
+                msg = r.text
+            print(f"API error: ({r.status_code}): {msg}", file=sys.stderr)
+            sys.exit(1)
+
+    def post_results(self, payload: dict[str, Any], endpoint) -> dict[str, Any]:
+        created = {}
         try:
-            msg = r.json().get("message") or r.text
-        except ValueError:
-            msg = r.text
-        print(f"API error: ({r.status_code}): {msg}", file=sys.stderr)
-        sys.exit(1)
+            created = self.send_post_request(payload, endpoint)
+        except requests.HTTPError as e:
+            self.handle_post_errors(e)
+        except requests.RequestException as e:
+            print("Network error:", e, file=sys.stderr)
+            sys.exit(1)
+        return created
 
-def post_results(payload: dict[str, Any], endpoint) -> dict[str, Any]:
-    try:
-        created = send_post_request(payload, endpoint)
-    except requests.HTTPError as e:
-        handle_post_errors(e)
-    except requests.RequestException as e:
-        print("Network error:", e, file=sys.stderr)
-        sys.exit(1)
-    return created
-
-def patch_results(payload: dict[str, Any], endpoint) -> dict[str, Any]:
-    try:
-        updated = send_patch_request(payload, endpoint)
-    except requests.HTTPError as e:
-        handle_post_errors(e)
-    except requests.RequestException as e:
-        print("Network error:", e, file=sys.stderr)
-        sys.exit(1)
-    return updated
+    def patch_results(self, payload: dict[str, Any], endpoint) -> dict[str, Any]:
+        updated = {}
+        try:
+            updated = self.send_patch_request(payload, endpoint)
+        except requests.HTTPError as e:
+            self.handle_post_errors(e)
+        except requests.RequestException as e:
+            print("Network error:", e, file=sys.stderr)
+            sys.exit(1)
+        return updated
