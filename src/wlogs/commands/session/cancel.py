@@ -1,4 +1,4 @@
-from local_session_manager import SessionManager
+from .local_session_manager import SessionManager
 from ...utils.data_lib import print_dict
 
 ses_mng = SessionManager("master-writing-log")
@@ -19,4 +19,3 @@ def parse_cancel_session(session_subparsers):
         "cancel", help="Discard the currently running session"
     )
     cancel_parser.set_defaults(func=cancel_session)
-

@@ -32,12 +32,13 @@ def update_scene_count(args):
 
 def parse_update_scene(scene_subparsers):
     update_parser = scene_subparsers.add_parser("update", help="Update scene details")
-    status_parser = update_parser.add_parser("status", help="Update scene status")
+    update_subparsers = update_parser.add_subparsers(dest="command")
+    status_parser = update_subparsers.add_parser("status", help="Update scene status")
     status_parser.add_argument("--scene", required=True, help="Scene code")
     status_parser.add_argument("--status", required=True, help="Scene status")
     status_parser.set_defaults(func=update_scene_status)
 
-    count_parser = update_parser.add_parser("count", help="Update scene's word count")
+    count_parser = update_subparsers.add_parser("count", help="Update scene's word count")
     count_parser.add_argument("--scene", required=True, help="Scene code")
     count_parser.add_argument("--words", required=True, help="New word count")
     status_parser.set_defaults(func=update_scene_count)

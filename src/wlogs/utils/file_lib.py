@@ -21,7 +21,7 @@ def get_last_line(path):
 
 
 def find_files(file_name: str):
-    options = [f for f in Path(HOME_DIR).rglob(file_name)]
+    options = [f for f in Path(HOME_DIR).rglob(f"*{file_name}*")]
     if len(options) > 1:
         choice = print_options(options)
     elif len(options) == 1:
