@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 LOG_FILE = "master-writing-log"
-API_URL = "homettp://localhost:3000"
+API_URL = "http://localhost:3000"
 HOME_DIR = Path(Path.home() / "repos")
 
 

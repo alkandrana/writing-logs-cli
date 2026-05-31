@@ -12,13 +12,13 @@ def stop_session(args):
     data = SESSION_MANAGER.load_session_data()
     SESSION_MANAGER.handle_no_data(data)
     words = args.words - int(data["start_words"])
-    SESSION_MANAGER.remove_session_data()
     payload = SESSION_MANAGER.convert_to_session(data, words)
     if not args.local:
         result = API.send_post_request(payload, "sessions")
         print("Successfully posted session:")
         print_dict(result)
     result = SESSION_MANAGER.store_local_session(payload)
+    SESSION_MANAGER.remove_session_data()
     print(f"Recorded: {result}")
 
 
