@@ -4,6 +4,9 @@ from typing import Any, Dict
 from wlogs.config import HOME_DIR
 from wlogs.utils.file_lib import find_files
 from .scene_manager import SceneManager
+from ...utils.api import Api
+
+API = Api('http://localhost:3000')
 
 scene_mng = SceneManager(HOME_DIR)
 
@@ -45,7 +48,14 @@ def build_yaml_header(deets: Dict[str, Any]) -> str:
         f"# {deets['scene_name']}\n"
     )
 
-
+def save_to_remote(deets: Dict[str, Any]) -> None:
+    project_code = API.get
+    payload = {
+        "code": deets['scene_id'].split("-")[1],
+        "name": deets['scene_name'],
+        "sequence": deets['scene_num'],
+        "plotline": deets['plotline']
+    }
 def new_scene(args):
     ### Get directory where scene will be created ###
     scene_path = get_scene_dir(args)

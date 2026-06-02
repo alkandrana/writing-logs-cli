@@ -39,11 +39,18 @@ def get_all_headers(novel_id):
     return headers
 
 
-def sum_chapters(scene_list):
-    chapters = defaultdict(int)
+def sum_chapters(scene_list) -> dict[str, int]:
+    chapters = {}
     for sc in scene_list:
-        cat = sc["chapter_title"]
-        chapters[cat] += sc["word_count"]
+        cat = sc["chapter_title"].lower()
+        if cat.title() not in chapters:
+            chapters[cat.title()] = {}
+            ch = chapters[cat.title()]
+            ch["wc"] = sc["word_count"]
+            ch["plotline"] = sc["protagonist"]
+            ch["sequence"] = sc["scene_order"]
+        else:
+            chapters[cat.title()]["wc"] += sc["word_count"]
     return chapters
 
 

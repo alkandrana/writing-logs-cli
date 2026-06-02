@@ -20,7 +20,7 @@ class SessionManager:
         self.path = root / "wlogs" / "current_session.json"
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.log_file = find_files(log)
+        self.log_file = log
 
     # Get session data out of temporary file
     def load_session_data(self):
@@ -28,6 +28,9 @@ class SessionManager:
             try:
                 with open(self.path, "r") as f:
                     data = json.load(f)
+                code_parts = data["scene_code"].split("-")
+                data["project_code"] = code_parts[0]
+                data["scene_code"] = code_parts[1]
             except json.decoder.JSONDecodeError:
                 data = {}
         else:
@@ -68,10 +71,26 @@ class SessionManager:
         return session
 
     def store_local_session(self, session):
-        path = self.log_file
+        path = find_files(self.log_file)
         columns = get_last_line(path).split(",")
         next_id = int(columns[0]) + 1
         row = f"{next_id},{session['date']},{session['startTime']},{session['stopTime']},{session['sceneCode']},{session['words']},"
         with open(path, "a") as f:
             f.write(row)
         return row
+
+    def get_scene_id(self, scene_code: str, api) -> int|None:
+        scene = api.get_results(scene_code, "scenes/code")
+        if scene:
+            return scene["id"]
+        else:
+            print(f"No scene with code {scene_code} found. Create it with 'wlogs scene new'", file=sys.stderr)
+            sys.exit(1)
+
+    def get_project_id(self, code, api) -> int:
+        project = api.get_one_record(code, "projects/code")
+        if project:
+            return project["id"]
+        else:
+            print(f"No project with code {code} found. Create it with 'wlogs project new'", file=sys.stderr)
+            sys.exit(1)

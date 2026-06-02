@@ -16,11 +16,18 @@ class Api:
         else:
             return False
 
+
     def send_post_request(self, payload, endpoint) -> dict:
         # POST /sessions with JSON body. Returns parsed JSON response.
         # Raises requests exceptions on errors.
         url = f"{self.api_url}/{endpoint}"
         res = requests.post(url, json=payload, timeout=10)
+        res.raise_for_status()
+        return res.json()
+
+    def get_one_record(self, code, endpoint) -> dict[str, Any]:
+        url = f"{self.api_url}/{endpoint}/{code}"
+        res = requests.get(url)
         res.raise_for_status()
         return res.json()
 
@@ -36,7 +43,7 @@ class Api:
             print("API error.", file=sys.stderr)
         else:
             try:
-                msg = r.json().get("message") or r.text
+               msg = r.json().get("message") or r.text
             except ValueError:
                 msg = r.text
             print(f"API error: ({r.status_code}): {msg}", file=sys.stderr)
@@ -52,6 +59,17 @@ class Api:
             print("Network error:", e, file=sys.stderr)
             sys.exit(1)
         return created
+
+    def get_results(self, code, endpoint) -> dict[str, Any]:
+        result = {}
+        try:
+            result = self.get_one_record(code, endpoint)
+        except requests.HTTPError as e:
+            self.handle_post_errors(e)
+        except requests.RequestException as e:
+            print("Network error:", e, file=sys.stderr)
+            sys.exit(1)
+        return result
 
     def patch_results(self, payload: dict[str, Any], endpoint) -> dict[str, Any]:
         updated = {}
