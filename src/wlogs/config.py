@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-LOG_FILE = "master-writing-log"
+LOG_FILE = "master-writing-log.csv"
 API_URL = "http://localhost:3000"
 HOME_DIR = Path(Path.home() / "repos")
 

@@ -74,7 +74,7 @@ class SessionManager:
         path = find_files(self.log_file)
         columns = get_last_line(path).split(",")
         next_id = int(columns[0]) + 1
-        row = f"{next_id},{session['date']},{session['startTime']},{session['stopTime']},{session['sceneCode']},{session['words']},"
+        row = f"{next_id},{session['date']},{session['startTime']},{session['stopTime']},{session['sceneCode']},{session['words']},\n"
         with open(path, "a") as f:
             f.write(row)
         return row
