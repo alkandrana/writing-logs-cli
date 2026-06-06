@@ -4,10 +4,12 @@ import sys
 import requests
 from typing import Any
 
+from wlogs.config import CONFIG
+print("Welcome to wlogs!")
 
 class Api:
-    def __init__(self, url) -> None:
-        self.api_url = url
+    def __init__(self) -> None:
+        self.api_url = CONFIG["api_url"]
 
     def record_exists(self, endpoint, code) -> bool:
         r = requests.get(f"{self.api_url}/{endpoint}/{code}", timeout=5)
@@ -51,6 +53,7 @@ class Api:
 
     def post_results(self, payload: dict[str, Any], endpoint) -> dict[str, Any]:
         created = {}
+
         try:
             created = self.send_post_request(payload, endpoint)
         except requests.HTTPError as e:
@@ -73,6 +76,7 @@ class Api:
 
     def patch_results(self, payload: dict[str, Any], endpoint) -> dict[str, Any]:
         updated = {}
+        print(payload, endpoint)
         try:
             updated = self.send_patch_request(payload, endpoint)
         except requests.HTTPError as e:

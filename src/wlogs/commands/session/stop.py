@@ -1,34 +1,32 @@
-import sys
-
-from ...utils.data_lib import print_dict
-from wlogs.commands.session.local_session_manager import SessionManager
+from ..scene.Scene import Scene
+from ...utils.data_lib import print_dict, get_current_timestamp
+from wlogs.commands.session.Session import Session
 from ...utils.api import Api
-from ...config import API_URL
 
-API = Api(API_URL)
-SESSION_MANAGER = SessionManager("master-writing-log")
+API = Api()
+SESSION = Session()
+if SESSION.data:
+    scene = Scene(f"{SESSION.data["project_code"]}-{SESSION.data["scene_code"]}")
+
+
+
 
 
 # wlogs session stop --words 566
 def stop_session(args):
-    print("Loading session data from file...")
-    data = SESSION_MANAGER.load_session_data()
-    SESSION_MANAGER.handle_no_data(data)
-    words = args.words - int(data["start_words"])
-    print("Retrieving scene from server...")
-    scene_id = SESSION_MANAGER.get_scene_id(data["scene_code"], API)
-    print("Formatting session data...")
-    payload = SESSION_MANAGER.convert_to_session(data, words)
+    SESSION.handle_no_data()
+    SESSION.data["words"] = args.words - int(SESSION.data["start_words"])
+    SESSION.data["stop_time"] = get_current_timestamp()
     if not args.local:
+        SESSION.data["scene_id"] = scene.get_scene_id()
+        payload = SESSION.convert_to_session()
         print("Sending session to server...")
-        payload["sceneId"] = scene_id
         result = API.send_post_request(payload, "sessions")
         print("Successfully posted session:")
         print_dict(result)
     print("Saving session to local log file...")
-    result = SESSION_MANAGER.store_local_session(payload)
-    print("Clearing state...")
-    SESSION_MANAGER.remove_session_data()
+    result = SESSION.store_local_session()
+    SESSION.remove_session_data()
     print(f"Recorded: {result}")
 
 

@@ -1,8 +1,7 @@
-import sys
+import sys, os
 from pathlib import Path
 from typing import Any
 import json
-from ..config import HOME_DIR
 from .data_lib import print_options
 
 
@@ -20,17 +19,33 @@ def get_last_line(path):
         sys.exit(0)
 
 
-def find_files(file_name: str):
-    options = [f for f in Path(HOME_DIR).rglob(f"*{file_name}*")]
+def find_files(file_name: str, search_dir = Path.home(), full_name: bool = False) -> Path:
+    if full_name:
+        options = [f for f in Path(search_dir).rglob(f"{file_name}")]
+    else:
+        options = [f for f in Path(search_dir).rglob(f"*{file_name}*")]
     if len(options) > 1:
         choice = print_options(options)
     elif len(options) == 1:
         choice = options[0]
     else:
-        print("No files matched your search criteria.")
+        print(f"No files matched your search for {file_name}")
         sys.exit(1)
     return choice
 
+# fast alternative to find_files with rglob
+# returns a function generator object; either use a for loop on the call, or next() on the result
+def fast_search(target_dir, target_filename):
+    # os.scandir returns an iterator that points directly to system memory
+    for entry in os.scandir(target_dir):
+        if entry.name == target_filename:
+            yield Path(entry.path)
+        elif entry.is_dir(follow_symlinks=False) and not entry.name.startswith("."):
+            # Recurse into subdirectories
+            try:
+                yield from fast_search(entry.path, target_filename)
+            except PermissionError:
+                continue
 
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():

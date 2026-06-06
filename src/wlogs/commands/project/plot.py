@@ -1,19 +1,24 @@
 import json
-from collections import defaultdict
-from wlogs.config import HOME_DIR
-from .project_manager import ProjectManager
 from pathlib import Path
 import yaml
+from ...config import CONFIG
+from ...utils.file_lib import find_files
 
-proj_mng = ProjectManager(HOME_DIR)
 
 
-def get_wc_goal(id):
-    novel_path = proj_mng.get_novel_path(id)
+def get_project_root(novel_id):
+    root = CONFIG["novels_path"]
+    return find_files(novel_id, full_name=True, search_dir=root)
+
+
+def get_wc_goal(novel_id):
+    novel_path = get_project_root(novel_id)
     json_path = Path(novel_path / "novel.json")
-    with open(json_path, "r") as f:
-        novel_json = json.load(f)
-        target = novel_json["target_wc"]
+    target = 100000
+    if json_path.exists():
+        with open(json_path, "r") as f:
+            novel_json = json.load(f)
+            target = novel_json["target_wc"]
     return target
 
 
@@ -27,7 +32,7 @@ def get_scene_header(scene_path):
 
 
 def get_all_headers(novel_id):
-    scene_dir = proj_mng.get_novel_path(novel_id) / "manuscript" / "scenes"
+    scene_dir = get_project_root(novel_id) / "manuscript" / "scenes"
     scenes = list(scene_dir.rglob("*.md"))
     headers = []
     for sc in scenes:
@@ -66,6 +71,7 @@ def get_chapter_list(chapter_counts: dict[str, int]):
 def calc_totals(records, target, count_prop):
     count = 0
     for sc in records:
+        print(sc)
         count += sc[count_prop]
         sc["tsf"] = count
         sc["pot"] = count / target
@@ -96,10 +102,10 @@ def list_chapters(target, scenelist, path):
 
 
 def plot(args):
-    id = args.novel_id
-    target = get_wc_goal(id)
-    novel_path = proj_mng.get_novel_path(id)
-    scene_list = get_all_headers(id)
+    novel_id = args.novel_id
+    target = get_wc_goal(novel_id)
+    novel_path = get_project_root(novel_id)
+    scene_list = get_all_headers(novel_id)
     if args.chapters:
         list_chapters(target, scene_list, novel_path)
         print(f"Chapter list printed to {novel_path}/chapters.csv")

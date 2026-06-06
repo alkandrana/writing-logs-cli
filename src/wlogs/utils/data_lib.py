@@ -18,8 +18,8 @@ def print_options(options):
     output = 0
     for i, option in enumerate(options):
         print(f"{i}. {option}")
-        choice = input("Select number: ")
-        output = options[int(choice)]
+    choice = input("Select number: ")
+    output = options[int(choice)]
     return output
 
 

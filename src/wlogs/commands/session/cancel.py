@@ -1,15 +1,15 @@
-from .local_session_manager import SessionManager
+from .Session import Session
 from ...utils.data_lib import print_dict
 
-ses_mng = SessionManager("master-writing-log")
-
+if __name__ == "__main__":
+    session = Session()
 
 # wlogs session cancel
 def cancel_session(_):
-    if not ses_mng.session_in_progress():
+    if not session.session_in_progress():
         print("No session running.")
-    data = ses_mng.load_session_data()
-    ses_mng.remove_session_data()
+    data = session.load_session_data()
+    session.remove_session_data()
     print("Canceled session:")
     print_dict(data)
 

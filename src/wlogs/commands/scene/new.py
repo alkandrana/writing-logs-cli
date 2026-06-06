@@ -1,20 +1,19 @@
+
 from pathlib import Path
 from typing import Any, Dict
 
-from wlogs.config import HOME_DIR
 from wlogs.utils.file_lib import find_files
-from .scene_manager import SceneManager
 from ...utils.api import Api
+from ...utils.data_lib import print_dict
 
-API = Api('http://localhost:3000')
+from wlogs.config import CONFIG
 
-scene_mng = SceneManager(HOME_DIR)
-
+API = Api()
 
 def get_scene_dir(args) -> Path:
+    root = CONFIG["novels_path"]
     proj = args.book
-    novel_root = find_files(proj)
-    # novel_data = f"{novel_root}/novel.json"
+    novel_root = find_files(proj, search_dir=root)
     scene_dir = f"{novel_root}/manuscript/scenes/"
     return Path(scene_dir)
 
@@ -49,13 +48,18 @@ def build_yaml_header(deets: Dict[str, Any]) -> str:
     )
 
 def save_to_remote(deets: Dict[str, Any]) -> None:
-    project_code = API.get
+    project_id = API.get_one_record(deets['scene_id'].split("-")[0], "projects/code")
     payload = {
         "code": deets['scene_id'].split("-")[1],
         "name": deets['scene_name'],
         "sequence": deets['scene_num'],
-        "plotline": deets['plotline']
+        "plotline": deets['plotline'],
+        "projectId": project_id
     }
+    result = API.post_results(payload, "scenes")
+    if result:
+        print(f"Scene successfully saved to remote: {print_dict(result)}")
+
 def new_scene(args):
     ### Get directory where scene will be created ###
     scene_path = get_scene_dir(args)
@@ -66,7 +70,6 @@ def new_scene(args):
     ### Create file and print header ###
     with open(f"{scene_path}/{scene_details['scene_id']}.md", "w") as f:
         f.write(header)
-
 
 def parse_new_scene(scene_subparsers):
     create_parser = scene_subparsers.add_parser(

@@ -1,16 +1,14 @@
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 import csv
-from ...config import LOG_FILE
-from ...utils.file_lib import find_files
+from wlogs.config import CONFIG
 
-LOG_PATH = find_files(LOG_FILE)
+LOG_PATH = CONFIG["log_path"]
 def sum_day(day):
     with open(LOG_PATH, "r") as f:
         reader = csv.DictReader(f)
         count = 0
         for row in reader:
             if row["date"] == day:
-                print(row)
                 count += int(row["words"])
     return count
 
@@ -20,7 +18,7 @@ def sum_year_span(span: str):
         count = 0
         for row in reader:
             if row["date"].startswith(span):
-                count += row["words"]
+                count += int(row["words"])
     return count
 
 def sum_week(start_date):
@@ -29,15 +27,16 @@ def sum_week(start_date):
         reader = csv.DictReader(f)
         count = 0
         for row in reader:
-            if start_date < row["date"] < end_date:
+            current_date = datetime.strptime(row["date"], "%Y-%m-%d")
+            if start_date <= current_date <= end_date:
                 count += int(row["words"])
     return count
 def count_sessions(args):
     if args.day:
-        timeframe = args.day
+        timeframe = datetime.strptime(args.day, "%Y-%m-%d")
         wc = sum_day(timeframe)
     elif args.week:
-        timeframe = args.week
+        timeframe = datetime.strptime(args.week, "%Y-%m-%d")
         wc = sum_week(timeframe)
     elif args.year:
         timeframe = args.year

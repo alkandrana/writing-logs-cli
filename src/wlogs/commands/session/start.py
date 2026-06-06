@@ -1,15 +1,15 @@
-from .local_session_manager import SessionManager
+from .Session import Session
 from ...utils.data_lib import print_dict, get_current_timestamp
 from ...utils.file_lib import write_json_to_file
 from datetime import datetime
 
 # wlogs session start --scene AKT-LTN [--start_words 499]
-ses_mng = SessionManager("master-writing-log")
+session = Session()
 
 
 def handle_current_session(args):
     print("A session is already in progress: ")
-    print_dict(ses_mng.load_session_data())
+    print_dict(session.data)
     print()
     args.subparser.print_help()
 
@@ -24,17 +24,17 @@ def build_start_session(args):
 
 
 def save_start_session(data):
-    write_json_to_file(ses_mng.path, data)
+    write_json_to_file(session.state_path, data)
 
 
 def print_start():
     print("Session started:")
-    print_dict(ses_mng.load_session_data())
+    print_dict(session.load_session_data())
 
 
 def start_session(args):
     ### Check for current session ###
-    if ses_mng.session_in_progress():
+    if session.data:
         handle_current_session(args)
     else:
         ### construct pre-session data ###
@@ -48,7 +48,7 @@ def start_session(args):
 def parse_start_session(session_subparsers):
     start_parser = session_subparsers.add_parser(
         "start",
-        help="Start a writing session (stores local state, must be either caceled or saved before a new one can be started)",
+        help="Start a writing session (stores local state, must be either canceled or saved before a new one can be started)",
     )
     start_parser.add_argument(
         "--scene", required=True, help="Scene code (e.g., AKT-JRM)"

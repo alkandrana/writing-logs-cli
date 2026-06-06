@@ -1,5 +1,5 @@
 import re
-
+from wlogs.config import CONFIG
 from wlogs.utils.file_lib import find_files
 
 
@@ -18,7 +18,8 @@ def count_words_in_scene(scene_path):
 
 
 def get_scene_count(args):
-    scene_path = find_files(args.code)
+    novels_dir = CONFIG["novels_path"]
+    scene_path = find_files(args.code, search_dir=novels_dir)
     word_count = count_words_in_scene(scene_path)
     print(f"There are {word_count} words in {args.code}")
 

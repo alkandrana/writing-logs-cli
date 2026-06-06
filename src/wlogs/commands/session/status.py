@@ -1,13 +1,13 @@
-from .local_session_manager import SessionManager
+from .Session import Session
 from ...utils.data_lib import print_dict
 
-ses_mng = SessionManager("master-writing-log")
+session = Session()
 
 
 def session_status(_):
-    if ses_mng.session_in_progress():
+    if session.data:
         print("Current session:")
-        print_dict(ses_mng.load_session_data())
+        print_dict(session.data)
     else:
         print("No session currently running.")
 

@@ -3,10 +3,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-LOG_FILE = "master-writing-log.csv"
-API_URL = "http://localhost:3000"
-HOME_DIR = Path(Path.home() / "repos")
+from wlogs.commands.config import load_config
 
+CONFIG = load_config()
 
-def base_url() -> str:
-    return os.getenv("WLOGS_BASE_URL", API_URL).rstrip("/")
+# def base_url() -> str:
+#     return os.getenv("WLOGS_BASE_URL", API_URL).rstrip("/")
