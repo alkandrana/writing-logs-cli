@@ -1,7 +1,6 @@
-import sys, os
+import sys, os, re, json
 from pathlib import Path
 from typing import Any
-import json
 from .data_lib import print_options
 
 
@@ -19,33 +18,34 @@ def get_last_line(path):
         sys.exit(0)
 
 
-def find_files(file_name: str, search_dir = Path.home(), full_name: bool = False) -> Path:
-    if full_name:
-        options = [f for f in Path(search_dir).rglob(f"{file_name}")]
-    else:
-        options = [f for f in Path(search_dir).rglob(f"*{file_name}*")]
+def find_files(keyword, target=Path.home(), full_name=False) -> Path | None:
+    options = []
+    for path in fast_search(keyword, target_dir=target, full_name=full_name):
+        options.append(path)
     if len(options) > 1:
         choice = print_options(options)
     elif len(options) == 1:
         choice = options[0]
     else:
-        print(f"No files matched your search for {file_name}")
-        sys.exit(1)
+        print(f"No files matched your search.")
+        return None
     return choice
 
 # fast alternative to find_files with rglob
 # returns a function generator object; either use a for loop on the call, or next() on the result
-def fast_search(target_dir, target_filename):
+def fast_search(target_filename, target_dir: Path | str = Path.home(), full_name: bool = False):
     # os.scandir returns an iterator that points directly to system memory
     for entry in os.scandir(target_dir):
-        if entry.name == target_filename:
-            yield Path(entry.path)
-        elif entry.is_dir(follow_symlinks=False) and not entry.name.startswith("."):
-            # Recurse into subdirectories
-            try:
-                yield from fast_search(entry.path, target_filename)
-            except PermissionError:
-                continue
+        if not entry.name.startswith(".") and not entry.name == "Library":
+            condition = target_filename == entry.name if full_name else target_filename in entry.name
+            if condition:
+                yield Path(entry.path)
+            elif entry.is_dir(follow_symlinks=False):
+                # Recurse into subdirectories
+                try:
+                    yield from fast_search(target_filename, target_dir=entry.path, full_name=full_name)
+                except PermissionError:
+                    continue
 
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():

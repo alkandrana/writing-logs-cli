@@ -1,9 +1,7 @@
 import sys
 from .Scene import Scene
 from ...utils.api import Api
-print("Loading status update module")
 API = Api()
-print("Api initialized")
 
 def update_scene_status(args):
     print("Printing status arguments: ", args)
@@ -37,7 +35,7 @@ def update_scene_count(args):
 
 def parse_update_scene(scene_subparsers):
     update_parser = scene_subparsers.add_parser("update", help="Update scene details")
-    update_subparsers = update_parser.add_subparsers(dest="command")
+    update_subparsers = update_parser.add_subparsers(dest="sub2command")
     status_parser = update_subparsers.add_parser("status", help="Update scene status")
     status_parser.add_argument("--scene", required=True, help="Scene code")
     status_parser.add_argument("--status", required=True, help="Scene status")

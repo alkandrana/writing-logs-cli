@@ -1,3 +1,5 @@
+import sys
+
 from ..scene.Scene import Scene
 from ...utils.data_lib import print_dict, get_current_timestamp
 from wlogs.commands.session.Session import Session
@@ -16,9 +18,14 @@ if SESSION.data:
 def stop_session(args):
     SESSION.handle_no_data()
     SESSION.data["words"] = args.words - int(SESSION.data["start_words"])
-    SESSION.data["stop_time"] = get_current_timestamp()
+    if not SESSION.data["stop_time"]:
+        SESSION.data["stop_time"] = get_current_timestamp()
     if not args.local:
-        SESSION.data["scene_id"] = scene.get_scene_id()
+        if API.record_exists("scenes/code", SESSION.data["scene_code"]):
+            SESSION.data["scene_id"] = scene.get_scene_id()
+        else:
+            print(f"Scene {SESSION.data["scene_code"]} doesn't exist yet. Create it with 'wlogs scene new' before proceeding.")
+            sys.exit(1)
         payload = SESSION.convert_to_session()
         print("Sending session to server...")
         result = API.send_post_request(payload, "sessions")

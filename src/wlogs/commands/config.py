@@ -47,7 +47,7 @@ def get_config(args = None) -> None:
     # name of log file
     log_file = input("Enter the name of the local file where you would like to save sessions: ")
     print("Searching for log file in novels directory...")
-    log_path = find_files(log_file, search_dir=novels_path, full_name=True)
+    log_path = find_files(log_file, target=novels_path, full_name=True)
     print(f"Log file is located at {log_path}")
     config_path = get_config_path() / ".config"
     print("Saving config details...")

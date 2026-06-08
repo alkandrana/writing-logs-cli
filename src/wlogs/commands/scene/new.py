@@ -13,7 +13,7 @@ API = Api()
 def get_scene_dir(args) -> Path:
     root = CONFIG["novels_path"]
     proj = args.book
-    novel_root = find_files(proj, search_dir=root)
+    novel_root = find_files(proj, target=root, full_name=True)
     scene_dir = f"{novel_root}/manuscript/scenes/"
     return Path(scene_dir)
 
@@ -48,7 +48,7 @@ def build_yaml_header(deets: Dict[str, Any]) -> str:
     )
 
 def save_to_remote(deets: Dict[str, Any]) -> None:
-    project_id = API.get_one_record(deets['scene_id'].split("-")[0], "projects/code")
+    project_id = API.get_one_record(deets['scene_id'].split("-")[0], "projects/code")["id"]
     payload = {
         "code": deets['scene_id'].split("-")[1],
         "name": deets['scene_name'],
@@ -70,6 +70,7 @@ def new_scene(args):
     ### Create file and print header ###
     with open(f"{scene_path}/{scene_details['scene_id']}.md", "w") as f:
         f.write(header)
+    save_to_remote(scene_details)
 
 def parse_new_scene(scene_subparsers):
     create_parser = scene_subparsers.add_parser(

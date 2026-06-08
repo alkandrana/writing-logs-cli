@@ -1,8 +1,7 @@
 from .Session import Session
 from ...utils.data_lib import print_dict
 
-if __name__ == "__main__":
-    session = Session()
+session = Session()
 
 # wlogs session cancel
 def cancel_session(_):

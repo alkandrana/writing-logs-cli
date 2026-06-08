@@ -13,15 +13,13 @@ class Scene:
         print(f"Initializing Scene object for {scene_id}")
         self.novel_id = scene_id.split("-")[0]
         self.scene_id = scene_id.split("-")[1]
-        self.novel = find_files(self.novel_id, search_dir=CONFIG["novels_path"], full_name=True)
-        self.scene = find_files(self.scene_id, search_dir=self.novel)
-        self.header = self.get_yaml_header()
-
-    # def validate_projects_root(self):
-    #     for key in self.projects:
-    #         if self.projects[key]["root"] != self.projects_root:
-    #             return False
-    #     return True
+        self.novel = find_files(self.novel_id, target=CONFIG["novels_path"], full_name=True)
+        print(self.scene_id)
+        self.scene = find_files(self.scene_id, target=self.novel)
+        if self.scene is None:
+            self.header = {}
+        else:
+            self.header = self.get_yaml_header()
 
     # def show_projects(self, project: str):
     # novel_root = self.projects[project]["path"]

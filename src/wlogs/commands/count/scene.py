@@ -19,7 +19,7 @@ def count_words_in_scene(scene_path):
 
 def get_scene_count(args):
     novels_dir = CONFIG["novels_path"]
-    scene_path = find_files(args.code, search_dir=novels_dir)
+    scene_path = find_files(args.code, target=novels_dir)
     word_count = count_words_in_scene(scene_path)
     print(f"There are {word_count} words in {args.code}")
 

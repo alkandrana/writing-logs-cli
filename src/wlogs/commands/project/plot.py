@@ -5,10 +5,9 @@ from ...config import CONFIG
 from ...utils.file_lib import find_files
 
 
-
 def get_project_root(novel_id):
     root = CONFIG["novels_path"]
-    return find_files(novel_id, full_name=True, search_dir=root)
+    return find_files(novel_id, full_name=True, target=root)
 
 
 def get_wc_goal(novel_id):
