@@ -10,6 +10,18 @@ print("Welcome to wlogs!")
 class Api:
     def __init__(self) -> None:
         self.api_url = CONFIG["api_url"]
+        is_running = self.health_check()
+        if not is_running:
+            print("Server appears to be down.", file=sys.stderr)
+            sys.exit(1)
+
+
+    def health_check(self):
+        try:
+            response = requests.get(self.api_url)
+            return response.status_code < 500
+        except requests.RequestException:
+            return False
 
     def record_exists(self, endpoint, code) -> bool:
         r = requests.get(f"{self.api_url}/{endpoint}/{code}", timeout=5)

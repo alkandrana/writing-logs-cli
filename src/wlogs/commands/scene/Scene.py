@@ -6,7 +6,7 @@ import sys
 from ...utils.api import Api
 from ...utils.file_lib import find_files
 from ...config import CONFIG
-
+print("Initializing api in Scene class...")
 API = Api()
 class Scene:
     def __init__(self, scene_id) -> None:
@@ -32,7 +32,7 @@ class Scene:
     #     self.write_json_header(header_dict, book_id)
 
     def get_yaml_header(self) -> dict[str, Any]:
-        with open(self.scene, "r") as f:
+        with open(self.scene, "r", encoding="utf-8") as f:
             content = f.read()
         parts = content.split("---")
         yaml_str = parts[1]

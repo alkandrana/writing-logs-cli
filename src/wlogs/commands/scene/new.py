@@ -8,6 +8,7 @@ from ...utils.data_lib import print_dict
 
 from wlogs.config import CONFIG
 
+print("Initializing api in create scene")
 API = Api()
 
 def get_scene_dir(args) -> Path:
@@ -38,11 +39,11 @@ def build_yaml_header(deets: Dict[str, Any]) -> str:
         f"protagonist: {deets['plotline']}\n"
         f"status: draft\n"
         f"word_count: 0\n"
-        "summary: {\n"
+        "summary: \n"
         "  Input: The state of the characters at the beginning of the scene.\n"
         "  Process: What happens in the scene.\n"
         "  Output: The change in the state of the story by the end of the scene.\n"
-        "}\n"
+        "\n"
         f"---\n\n"
         f"# {deets['scene_name']}\n"
     )

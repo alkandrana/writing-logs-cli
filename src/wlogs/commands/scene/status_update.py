@@ -1,6 +1,7 @@
 import sys
 from .Scene import Scene
 from ...utils.api import Api
+print("Initializing api in update scene")
 API = Api()
 
 def update_scene_status(args):

@@ -33,8 +33,7 @@ def sum_week(start_date):
     return count
 def count_sessions(args):
     if args.day:
-        timeframe = datetime.strptime(args.day, "%Y-%m-%d")
-        wc = sum_day(timeframe)
+        wc = sum_day(args.day)
     elif args.week:
         timeframe = datetime.strptime(args.week, "%Y-%m-%d")
         wc = sum_week(timeframe)

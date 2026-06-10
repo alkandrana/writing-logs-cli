@@ -4,7 +4,7 @@ from ..scene.Scene import Scene
 from ...utils.data_lib import print_dict, get_current_timestamp
 from wlogs.commands.session.Session import Session
 from ...utils.api import Api
-
+print("Initializing api in stop session")
 API = Api()
 SESSION = Session()
 if SESSION.data:
