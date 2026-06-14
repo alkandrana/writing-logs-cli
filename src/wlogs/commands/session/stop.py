@@ -10,15 +10,11 @@ SESSION = Session()
 if SESSION.data:
     scene = Scene(f"{SESSION.data["project_code"]}-{SESSION.data["scene_code"]}")
 
-
-
-
-
 # wlogs session stop --words 566
 def stop_session(args):
     SESSION.handle_no_data()
     SESSION.data["words"] = args.words - int(SESSION.data["start_words"])
-    if not SESSION.data["stop_time"]:
+    if not "stop_time" in SESSION.data:
         SESSION.data["stop_time"] = get_current_timestamp()
     if not args.local:
         if API.record_exists("scenes/code", SESSION.data["scene_code"]):
@@ -35,7 +31,6 @@ def stop_session(args):
     result = SESSION.store_local_session()
     SESSION.remove_session_data()
     print(f"Recorded: {result}")
-
 
 def parse_stop_session(session_subparsers):
     stop_parser = session_subparsers.add_parser(
