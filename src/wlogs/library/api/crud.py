@@ -11,7 +11,8 @@ def get_record_id(code, endpoint):
     }
     res = send_auth_request(request)
     if res.status_code == 404:
-        return None
+        print(f"Record {code} not found at {request["endpoint"]}.")
+        sys.exit(1)
     else:
         return res.json()
 

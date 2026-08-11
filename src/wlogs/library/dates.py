@@ -66,7 +66,7 @@ def print_list_dict(lst):
 
 def load_json(path: Path):
     if path.exists():
-        with open(path, "r") as f:
+        with open(path, "r", encoding='utf-8-sig') as f:
             data = json.load(f)
     else:
         data = {}

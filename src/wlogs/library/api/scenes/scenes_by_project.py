@@ -1,4 +1,5 @@
 import os, dotenv
+import sys
 from typing import Any
 from wlogs.library.api.auth import send_auth_request
 from ..projects.list import get_project_by_code
@@ -13,9 +14,14 @@ def get_scenes(code) -> dict[str, Any]:
         "method": "GET",
         "endpoint": f"{os.getenv('BASE_URL')}/scenes/project/{project_id}",
     }
-    scenes = send_auth_request(request)
-    scenes.sort(key=lambda sc: sc["sequence"])
-    return {"project": proj["title"], "scenelist": scenes}
+    res = send_auth_request(request)
+    if 200 <= res.status_code < 300:
+        scenes = res.json()
+        scenes.sort(key=lambda sc: sc["sequence"])
+        return {"project": proj["title"], "scenelist": scenes}
+    else:
+        print(f"\n{res.status_code}: {res.json()}")
+        sys.exit(1)
 
 
 def print_scenes(project):
@@ -26,8 +32,8 @@ def print_scenes(project):
         for key, value in scene.items():
             if not "id" in key.lower() and not "status" in key:
                 print(f"{key}: {value}")
-            elif key == "status":
-                print(f"{key}: {value['name']}")
+            # elif key == "status":
+            #     print(f"{key}: {value['name']}")
         print("\n")
 
 

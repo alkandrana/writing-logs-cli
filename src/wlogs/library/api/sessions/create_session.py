@@ -8,16 +8,16 @@ from wlogs.library.dates import to_zulu, format_dates
 
 dotenv.load_dotenv()
 
-
-def get_scene_id(code):
-    print(f"Fetching scene with code {code}...")
-    res = get_one_scene(code)
-    if res.status_code == 404:
-        print("No scene with that code.")
-        sys.exit(1)
-    else:
-        scene = res.json()
-    return scene["id"]
+#   REDUNDANT
+# def get_scene_id(code):
+#     print(f"Fetching scene with code {code}...")
+#     res = get_one_scene(code)
+#     if res.status_code == 404:
+#         print("No scene with that code.")
+#         sys.exit(1)
+#     else:
+#         scene = res.json()
+#     return scene["id"]
 
 
 def build_session_body(args):

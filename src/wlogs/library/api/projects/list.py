@@ -46,7 +46,7 @@ def get_project_by_code(code):
         "endpoint": f"{os.getenv('BASE_URL')}/projects/code/{code}",
     }
     res = send_auth_request(request)
-    return res.json()
+    return res.json()[0]
 
 
 def get_project_by_id(pid):

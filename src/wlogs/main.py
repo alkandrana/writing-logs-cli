@@ -1,7 +1,7 @@
 import argparse
 
 from .library.api.batch_post.sync import parse_sync
-from .library.api.projects import parse_project
+from .library.api.projects import parse_projects
 from .library.api.scenes import parse_scenes
 from .commands.session import parse_session
 from .commands.setup.config import parse_config
@@ -28,6 +28,7 @@ def main():
     parse_file(subparsers)
     parse_plotter(subparsers)
     parse_project(subparsers)
+    parse_projects(subparsers)
     args = parser.parse_args()
     args.func(args)
 

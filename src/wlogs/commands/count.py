@@ -6,6 +6,7 @@ from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
 from wlogs.library.api.crud import get_record_by_id
 from wlogs.library.api.scenes.scene import get_scene_id
+from wlogs.library.dates import print_dict
 
 
 def get_all_sessions():
@@ -27,6 +28,7 @@ def print_sessions(sessions, wpm=False):
         for key, value in ses.items():
             if key == "scene" and value and "code" in value:
                 print(f"{key}: {value['code']}")
+
             elif key == "author" and value and "userName" in value:
                 print(f"{key}: {value['userName']}")
             elif "time" in key.lower() and value:
@@ -54,19 +56,15 @@ def get_by_date(date, sessions):
     return filtered
 
 
-def get_by_scene(scene):
-    scene_id = get_scene_id(scene)
-    request = {"method": "GET", "endpoint": f"{load_config()["api_url"]}/sessions/scene/{scene_id}"}
-    res = send_auth_request(request)
-    return res.json()
+def get_by_scene(sessions, scene):
+    sessions = [s for s in sessions if s["scene"]["code"] == scene]
+    return sessions
 
 
-def get_by_project(project):
-    project_id = get_project_id(project)
-    request = {"method": "GET", "endpoint": f"{load_config()["api_url"]}/sessions/project/{project_id}"}
-    res = send_auth_request(request)
-    return res.json()
-
+def get_by_project(sessions, project):
+    sessions = [s for s in sessions
+                if s["scene"]["project"]["code"] == project]
+    return sessions
 
 def count_sessions(sessions):
     count = 0
@@ -87,20 +85,16 @@ def calc_wpm(session):
 
 
 def list_sessions(args):
+    sessions = get_all_sessions()
     if args.scene:
-        sessions = get_by_scene(args.scene)
-    elif args.project:
-        sessions = get_by_project(args.project)
-    elif args.date:
-        print(args.date)
-        sessions = get_all_sessions()
+        sessions = get_by_scene(sessions, args.scene)
+    if args.project:
+        sessions = get_by_project(sessions, args.project)
+    if args.date:
         sessions = get_by_date(args.date, sessions)
-    elif args.today:
+    if args.today:
         date = datetime.strftime(datetime.today(), "%Y-%m-%d")
-        sessions = get_all_sessions()
         sessions = get_by_date(date, sessions)
-    else:
-        sessions = get_all_sessions()
     if args.count:
         word_count = count_sessions(sessions)
         print(f"\n{word_count:,} words written in all sessions.")

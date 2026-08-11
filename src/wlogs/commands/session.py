@@ -3,7 +3,8 @@ from datetime import datetime
 from pathlib import Path
 from .. import get_store_path, load_config
 from ..library.dates import to_zulu, print_dict
-from ..library.api.sessions.create_session import get_scene_id, post_session
+from ..library.api.sessions.create_session import post_session
+from ..library.api.scenes.scene import get_scene_id
 import sys, os, json
 
 
@@ -72,8 +73,8 @@ def convert_to_session(data):
     scene_id = get_scene_id(code)
     return {
         "date": data["date"],
-        "startTime": to_zulu(data["start_time"]),
-        "stopTime": to_zulu(data["stop_time"]),
+        "startTime": to_zulu(data["start_time"]) if data["start_time"] else data["start_time"],
+        "stopTime": to_zulu(data["stop_time"]) if data["stop_time"] else data["stop_time"],
         "words": data["words"],
         "sceneId": scene_id,
     }
@@ -101,7 +102,7 @@ def stop(args):
         print("Unable to save session to API.")
 
 def save(args):
-    scene_id = get_scene_id(args.scene)
+    # scene_id = get_scene_id(args.scene)
     data = {
         "date": args.date,
         "start_time": args.start_time if args.start_time else None,

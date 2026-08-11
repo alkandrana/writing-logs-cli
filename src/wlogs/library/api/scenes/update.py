@@ -3,15 +3,22 @@ import sys
 
 from wlogs.library.api.crud import send_auth_request
 from wlogs.library.api.scenes.scene import get_scene_id
+from wlogs.library.api.statuses.list import get_status_id
 
 dotenv.load_dotenv()
 def build_patch(args):
     scene_id = get_scene_id(args.code)
     print(f"ID for scene with code {args.code}: {scene_id}")
+    if args.property == "status":
+        value = get_status_id(args.value)
+        property = "statusId"
+    else:
+        value = args.value
+        property = args.property
     payload = {
         "op": "replace",
-        "path": f"/{args.property}",
-        "value": args.value
+        "path": property,
+        "value": value
     }
     print(f"Payload: {payload}")
     request = {
