@@ -26,13 +26,19 @@ def get_projects():
 
 def print_projects(projects):
     print(f"Found {len(projects)} projects:\n")
+    header = ""
+    for key in projects[0].keys():
+        if "author" not in key or key == "author":
+            header += f"{key}\t"
+    print(header)
     for rec in projects:
+        row = ""
         for key, value in rec.items():
             if "author" not in key:
-                print(f"{key}: {value}")
+                row += f"{value}\t"
             elif key == "author":
-                print(f"{key}: {value['userName']}")
-        print("\n")
+                row += f"{value['userName']}\t"
+        print(row)
 
 
 def view_all(args):
