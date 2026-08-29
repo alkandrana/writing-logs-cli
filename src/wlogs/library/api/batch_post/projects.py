@@ -1,4 +1,3 @@
-import os
 import sys
 from typing import Any
 from .sync.list import get_projects_from_log
@@ -36,7 +35,7 @@ def create_project_interactive(code):
         payload["goal"] = 100000
     request = {
         "method": "POST",
-        "endpoint": f"{os.getenv('BASE_URL')}/projects",
+        "endpoint": f"{load_config()['api_url']}/projects",
         "payload": payload,
     }
     res = send_auth_request(request)

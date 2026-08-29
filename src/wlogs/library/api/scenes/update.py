@@ -1,11 +1,9 @@
-import os, dotenv
 import sys
 
+from wlogs import load_config
 from wlogs.library.api.crud import send_auth_request
 from wlogs.library.api.scenes.scene import get_scene_id
 from wlogs.library.api.statuses.list import get_status_id
-
-dotenv.load_dotenv()
 def build_patch(args):
     scene_id = get_scene_id(args.code)
     print(f"ID for scene with code {args.code}: {scene_id}")
@@ -23,7 +21,7 @@ def build_patch(args):
     print(f"Payload: {payload}")
     request = {
         "method": "PATCH",
-        "endpoint": f"{os.getenv("BASE_URL")}/scenes/{scene_id}",
+        "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}",
         "payload": [payload]
     }
     print(f"Request: {request}")

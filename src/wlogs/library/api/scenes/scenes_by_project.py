@@ -1,18 +1,16 @@
-import os, dotenv
 import sys
 from typing import Any
+
+from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
 from ..projects.list import get_project_by_code
-
-dotenv.load_dotenv()
-
 
 def get_scenes(code) -> dict[str, Any]:
     proj = get_project_by_code(code)
     project_id = proj["id"]
     request = {
         "method": "GET",
-        "endpoint": f"{os.getenv('BASE_URL')}/scenes/project/{project_id}",
+        "endpoint": f"{load_config()['api_url']}/scenes/project/{project_id}",
     }
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:

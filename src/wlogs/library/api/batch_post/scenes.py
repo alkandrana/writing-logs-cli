@@ -1,4 +1,4 @@
-import sys, os, dotenv
+import sys
 from pathlib import Path
 from .utils import transfer, post_record
 from wlogs.library.api.crud import get_status_values
@@ -7,7 +7,6 @@ from wlogs.library.file.search import find_file, fast_search
 from ..projects.list import get_project_by_id
 from ....commands import get_project_id
 
-dotenv.load_dotenv()
 node_url = 'http://localhost:3000'
 def translate_status(status):
     statuses = get_status_values()

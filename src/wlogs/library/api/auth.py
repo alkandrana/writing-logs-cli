@@ -1,9 +1,7 @@
 from wlogs import load_config
-import os, sys, dotenv, requests
+import sys, requests
 import maskpass
 import keyring as kr
-
-dotenv.load_dotenv()
 # AUTH WORKFLOW
 # 1. User sends request
 # 2. Attempt to load token from keyring
