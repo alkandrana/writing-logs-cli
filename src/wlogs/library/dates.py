@@ -7,8 +7,8 @@ from wlogs.commands.setup.config import get_store_path
 
 
 def to_zulu(date_str: str) -> str:
-    date = datetime.fromisoformat(date_str)
-    dtu = date.astimezone(timezone.utc)
+    date = datetime.fromisoformat(date_str) # expects ISO string with local offset
+    dtu = date.astimezone(timezone.utc) # converts local to utc
     return dtu.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

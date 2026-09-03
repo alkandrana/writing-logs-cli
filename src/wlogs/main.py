@@ -12,6 +12,7 @@ from .commands.count import parse_count
 from .library.file import parse_file
 from .library.api.auth import parse_auth
 from .commands.project import parse_project
+from .library.api.sessions import parse_sessions
 
 
 def main():
@@ -29,6 +30,7 @@ def main():
     parse_plotter(subparsers)
     parse_project(subparsers)
     parse_projects(subparsers)
+    parse_sessions(subparsers)
     args = parser.parse_args()
     args.func(args)
 

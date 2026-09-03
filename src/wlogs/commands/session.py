@@ -7,6 +7,8 @@ from ..library.api.sessions.create_session import post_session
 from ..library.api.scenes.scene import get_scene_id
 import sys, os, json
 
+from ..library.file.search import find_file
+
 
 def initialize(scene):
     session_data = {
@@ -70,7 +72,7 @@ def save_local(data):
 def convert_to_session(data):
     print(data)
     code = data["scene"].split("-")[1] if "-" in data["scene"] else data["scene"]
-    scene_id = get_scene_id(code)
+    scene_id = get_scene_id(data["scene"])
     return {
         "date": data["date"],
         "startTime": to_zulu(data["start_time"]) if data["start_time"] else data["start_time"],
@@ -117,6 +119,28 @@ def save(args):
     if 200 <= res.status_code < 300:
         save_local(data)
         print("Session saved")
+
+def novelwrite_session(args):
+    project = input("Project Name: ")
+    path = find_file(project, full_name=True)
+    if not path.exists():
+        print("Project folder could not be located. Check spelling and try again.")
+        sys.exit(1)
+    else:
+        session_json = path / "meta" / "sessions.jsonl"
+        with open(session_json, "r") as f:
+            for line in f:
+                session = line.strip()
+        ses_dict = json.loads(session)
+        start = datetime.fromisoformat(ses_dict["start"]).astimezone() if "start" in ses_dict else None
+        stop = datetime.fromisoformat(ses_dict["end"]).astimezone() if "end" in ses_dict else None
+        session = {
+            "date": datetime.strftime(start, "%Y-%m-%d"),
+            "start_time": to_zulu(start.isoformat()) if start else None,
+            "stop_time": to_zulu(stop.isoformat()) if stop else None,
+            "words": args.words,
+            "scene": args.scene,
+        }
 
 def status(_):
     path = get_store_path() / "session.json"
