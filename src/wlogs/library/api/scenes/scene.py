@@ -1,13 +1,8 @@
-import os, dotenv
 import sys
-
 from wlogs import load_config
 from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
 from wlogs.library.api.crud import get_record_id
-
-dotenv.load_dotenv()
-
 
 def get_one_scene(code: str):
     request = {

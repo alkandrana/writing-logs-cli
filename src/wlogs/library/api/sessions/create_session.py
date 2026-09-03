@@ -1,12 +1,7 @@
-import sys, os, dotenv
-from datetime import datetime
-
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
 from ..scenes.scene import get_one_scene
 from wlogs.library.dates import to_zulu, format_dates
-
-dotenv.load_dotenv()
 
 #   REDUNDANT
 # def get_scene_id(code):

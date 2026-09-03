@@ -1,11 +1,6 @@
-import os, dotenv
-
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
 from wlogs.commands import node_url, send_request
-
-dotenv.load_dotenv()
-
 
 def get_projects():
     request = {
@@ -49,7 +44,7 @@ def view_all(args):
 def get_project_by_code(code):
     request = {
         "method": "GET",
-        "endpoint": f"{os.getenv('BASE_URL')}/projects/code/{code}",
+        "endpoint": f"{load_config()['api_url']}/projects/code/{code}",
     }
     res = send_auth_request(request)
     return res.json()[0]
@@ -58,7 +53,7 @@ def get_project_by_code(code):
 def get_project_by_id(pid):
     request = {
         "method": "GET",
-        "endpoint": f"{os.getenv('BASE_URL')}/projects/{pid}",
+        "endpoint": f"{load_config()['api_url']}/projects/{pid}",
     }
     res = send_auth_request(request)
     return res.json()

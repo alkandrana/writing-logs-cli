@@ -1,15 +1,9 @@
-import os, sys, requests
-from typing import Any
-
+import sys, requests
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
-from dotenv import load_dotenv
 
 from wlogs.library.api.crud import get_record_id
 
-load_dotenv()
-
-asp_url = os.getenv("BASE_URL")
+asp_url = load_config()['api_url']
 node_url = "http://localhost:3000"
 
 def get_project_id(project_code):

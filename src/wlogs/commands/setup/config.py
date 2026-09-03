@@ -7,7 +7,8 @@ from wlogs.library.api.auth import check_server_health
 def set_log_file(_):
     log = input("Enter the name of your writing sessions log file: ")
     log_path = find_file(log)
-    config_file = get_store_path() / "config.json"
+    config_path = get_store_path()
+    config_file = config_path / "config.json"
     if log_path.exists():
         if config_file.exists():
             with open(config_file, "r") as f:
@@ -15,6 +16,7 @@ def set_log_file(_):
             config["log_file"] = str(log_path)
         else:
             config = {"log_file": str(log_path)}
+            config_path.mkdir(parents=True, exist_ok=True)
         print(config)
         with open(config_file, "w") as f:
             json.dump(config, f)
