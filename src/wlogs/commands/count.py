@@ -2,22 +2,19 @@ import sys
 from datetime import datetime
 
 from wlogs import load_config
-from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
 from wlogs.library.api.crud import get_record_by_id
-from wlogs.library.api.scenes.scene import get_scene_id
-from wlogs.library.dates import print_dict
 
 
 def get_all_sessions():
-    request = {"method": "GET", "endpoint": f"{load_config()["api_url"]}/sessions"}
+    request = {"method": "GET", "endpoint": f"{load_config()['api_url']}/sessions"}
     res = send_auth_request(request)
     sessions = res.json()
     sessions.sort(key=lambda x: datetime.fromisoformat(x["date"]))
     return sessions
 
 
-def print_sessions(sessions, wpm=False):
+def print_sessions(sessions):
     print(f"\n{len(sessions)} sessions match the criteria:\n")
     if len(sessions) > 5:
         choice = input(f"List all {len(sessions)} sessions? (y/n): ")
@@ -37,7 +34,7 @@ def print_sessions(sessions, wpm=False):
                 print(f"{key}: {datetime.strftime(value, '%Y-%m-%d %H:%M:%S')}")
             elif (key == "duration" or key == "wpm") and value:
                 print(f"{key}: {round(value)}")
-            elif not "id" in key.lower():
+            elif "id" not in key.lower():
                 print(f"{key}: {value}")
         print("\n")
 
@@ -62,9 +59,9 @@ def get_by_scene(sessions, scene):
 
 
 def get_by_project(sessions, project):
-    sessions = [s for s in sessions
-                if s["scene"]["project"]["code"] == project]
+    sessions = [s for s in sessions if s["scene"]["project"]["code"] == project]
     return sessions
+
 
 def count_sessions(sessions):
     count = 0
@@ -99,18 +96,15 @@ def list_sessions(args):
         word_count = count_sessions(sessions)
         print(f"\n{word_count:,} words written in all sessions.")
     else:
-        print_sessions(sessions, args.wpm)
+        print_sessions(sessions)
 
 
 def parse_count(subparsers):
     count_parser = subparsers.add_parser("count")
-    count_subparsers = count_parser.add_subparsers(dest="subcommand")
-    sessions_parser = count_subparsers.add_parser("sessions")
-    sessions_parser.add_argument("--today", "-t", action="store_true")
-    sessions_parser.add_argument("--date", "-d", required=False)
-    sessions_parser.add_argument("--scene", "-s", required=False)
-    sessions_parser.add_argument("--project", "-p", required=False)
-    sessions_parser.add_argument("--count", "-c", action="store_true", required=False)
-    sessions_parser.add_argument("--wpm", "-w", action="store_true", required=False)
-    sessions_parser.set_defaults(func=list_sessions)
-
+    count_parser.add_argument("--today", "-t", action="store_true")
+    count_parser.add_argument("--date", "-d", required=False)
+    count_parser.add_argument("--scene", "-s", required=False)
+    count_parser.add_argument("--project", "-p", required=False)
+    count_parser.add_argument("--count", "-c", action="store_true", required=False)
+    count_parser.add_argument("--wpm", "-w", action="store_true", required=False)
+    count_parser.set_defaults(func=list_sessions)

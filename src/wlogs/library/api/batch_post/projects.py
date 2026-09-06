@@ -6,7 +6,7 @@ from .sync.sync_scenes import (
     get_local_project_details,
     get_unsaved_projects,
 )
-from wlogs.commands import send_auth_request
+from ..auth import send_auth_request
 from .utils import transfer, post_record
 from wlogs.library.api.auth import check_server_health
 from wlogs import load_config

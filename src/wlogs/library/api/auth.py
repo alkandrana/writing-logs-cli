@@ -30,8 +30,8 @@ def send_auth_request(request):
         "Content-Type": "application/json",
     }
     request["headers"] = headers
-    content = validate_response(request)
-    return content
+    res = validate_response(request)
+    return res
 
 
 def get_refresh_token():
@@ -88,7 +88,7 @@ def validate_response(request):
         sys.exit(1)
 
 
-def send_request(request) -> requests.Response | None:
+def send_request(request):
     access_token = get_access_token()
     request["headers"]["Authorization"] = f"Bearer {access_token}"
     # print(f"Sending authenticated request: {request['endpoint']}")
