@@ -1,7 +1,5 @@
 import sys, requests, csv, os
 from ..crud import post_record
-from wlogs.library.api.auth import send_auth_request
-from pathlib import Path
 
 
 

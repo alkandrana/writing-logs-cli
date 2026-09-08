@@ -1,71 +1,36 @@
-from wlogs import load_config
 from ...crud import check_record_exists
-from pathlib import Path
-import csv
-def get_scene_id(compound_id):
-    codes = {}
-    if "-" in compound_id:
-        parts = compound_id.split("-")
-        codes["project"] = parts[0]
-        codes["scene"] = parts[1]
-    return codes
-
-def get_scenes_in_log():
-    scenes = []
-    log_file = load_config()["log_file"]
-    if Path(log_file).exists():
-        with open(log_file, "r") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                scenes.append(row["scene_id"].upper())
-    return list(dict.fromkeys(scenes))
-
-
-# 2. using the resultant list of scenes, get all projects referenced
-def get_projects_from_log(scene_codes) -> list[str]:
-    booklist = []
-    for scene in scene_codes:
-        code_parts = get_scene_id(scene)
-        if not "project" in code_parts:
-            print(f"Project not found for scene: {scene}")
-        elif code_parts["project"].lower() not in booklist:
-            booklist.append(code_parts["project"].lower())
-    return booklist
-
-# 3. get all unique scenes for a given project
-def get_scenes_for_project(scenes: list[str], code: str) -> list[str]:
-    book_scenes = []
-    for s in scenes:
-        codes = get_scene_id(s)
-        if codes["project"].lower().startswith(code.lower()):
-            book_scenes.append(codes["scene"].upper())
-    unique_book_scenes = list(dict.fromkeys(book_scenes))
-    return unique_book_scenes
-
-#4. print out by project
-def print_all_scenes(args) -> dict[str, list[str]]:
-    projects = {}
-    all_scene_codes = get_scenes_in_log()
-    project_codes = get_projects_from_log(all_scene_codes)
-    for code in project_codes:
-        print(f"Scenes for project: {code.upper()}")
-        unique_scene_codes = get_scenes_for_project(all_scene_codes, code)
-        print(unique_scene_codes)
-        projects[code] = unique_scene_codes
+from .string_utils import split_compound_id
+from .log_utils import get_projects_from_log, get_scenes_in_log
+def print_all_scenes(args):
+    scene_codes = get_scenes_in_log()
+    projects = get_projects_from_log(scene_codes) # returns a dictionary of project codes + scene lists
+    for proj in projects.keys():
+        print(f"Scenes for project: {proj.upper()}")
+        print(projects[proj])
     if args.sync:
-        check_sync_status(projects)
-    return projects
+        print(f"Checking for projects that need to be synced...")
+        projects_to_create = check_sync_projects(projects)
+        print("Projects that need to be synced: ", projects_to_create)
+        print("Checking for scenes that need to be synced...")
+        scenes_to_create = check_sync_scenes(projects)
+        print("Scenes that need to be synced: ", scenes_to_create)
 
-def check_sync_status(projects: dict[str, list[str]]):
+def check_sync_projects(projects: dict[str, list[str]]) -> list[str]:
+    projects_to_create = []
+    for proj in projects.keys():
+        if not check_record_exists(proj, "projects"):
+            projects_to_create.append(proj)
+    return projects_to_create
+
+def check_sync_scenes(projects: dict[str, list[str]]):
     scenes_to_create = {}
     for key, value in projects.items():
         if key not in scenes_to_create:
             scenes_to_create[key] = []
         for code in value:
-            if not check_record_exists(code, "scenes"):
-                if code not in scenes_to_create[key]:
+            if code not in scenes_to_create[key]:
+                if not check_record_exists(f"{key}-{code}", "scenes"):
                     scenes_to_create[key].append(code)
-    print(f"Scenes that need to be synced {scenes_to_create}")
     return scenes_to_create
 
 

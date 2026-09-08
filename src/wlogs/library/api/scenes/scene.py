@@ -37,7 +37,7 @@ def print_scene(scenelist):
         scene = scenelist[int(choice)]
     else:
         scene = scenelist[0]
-    print("Scene {scene['code']}: {scene['name']}\n")
+    print(f"Scene {scene['code']}: {scene['name']}\n")
     for key, value in scene.items():
         if not key == "project":
             print(f"{key}: {value}")

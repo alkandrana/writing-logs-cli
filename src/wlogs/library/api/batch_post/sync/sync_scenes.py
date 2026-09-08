@@ -7,7 +7,8 @@ from wlogs.library.api.batch_post.utils import post_record
 from wlogs.library.dates import print_list_dict
 from wlogs.library.file.scenes import load_yaml_header
 from wlogs.library.file.search import find_file
-from .list import get_projects_from_log, get_scenes_in_log, get_scene_id
+from .string_utils import split_compound_id
+from .log_utils import get_scenes_in_log, get_projects_from_log
 from wlogs.library.api.crud import get_record_by_code
 from wlogs.library.dates import print_list
 
@@ -21,7 +22,7 @@ def check_sync_status(scene_codes: list[str]):
     scenes_to_add = []
     scene_records = []
     for sc in scene_codes:
-        code = get_scene_id(sc)["scene"]
+        code = split_compound_id(sc)["scene"]
         res = get_record_by_code(code, "scenes")
         if res.status_code == 404:
             scenes_to_add.append(sc)

@@ -71,7 +71,6 @@ def save_local(data):
 
 def convert_to_session(data):
     print(data)
-    code = data["scene"].split("-")[1] if "-" in data["scene"] else data["scene"]
     scene_id = get_scene_id(data["scene"])
     return {
         "date": data["date"],

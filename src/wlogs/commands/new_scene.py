@@ -1,4 +1,4 @@
-from ..library.api.batch_post.sync.list import get_scene_id
+from ..library.api.batch_post.sync.string_utils import split_compound_id
 from ..library.api.scenes.create_scene import post_scene
 from ..library.dates import to_zulu
 from ..library.file.scenes import get_next_scene_num
@@ -32,7 +32,7 @@ def create_scene_file(details, filename):
 
 def convert_yaml_to_payload(header):
     statuses = get_status_values()
-    codes = get_scene_id(header["scene_id"])
+    codes = split_compound_id(header["scene_id"])
     project_id = get_project_id(codes["project"])
     if not project_id:
         print("Book doesn't exist yet. Create it with 'wlogs project add'")
