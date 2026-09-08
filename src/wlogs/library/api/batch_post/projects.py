@@ -1,6 +1,6 @@
 import sys
 from typing import Any
-from .sync.list import get_projects_from_log
+from .sync.list import get_projects_from_scenes
 from .sync.sync_scenes import (
     sync_projects,
     get_local_project_details,
@@ -77,7 +77,7 @@ def format_projects_from_local(projects: list[dict[str, Any]]) -> list[dict]:
 
 def post_projects_from_file():
     print("Getting unsaved projects...")
-    codes = get_projects_from_log()
+    codes = get_projects_from_scenes()
     codes_to_add = sync_projects(codes)["local"]
     print("Converting project codes to project payload...")
     projects_to_add = get_local_project_details(codes_to_add)

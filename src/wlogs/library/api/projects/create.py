@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
@@ -18,23 +19,23 @@ def post_project(book):
     else:
         print("Response status: ", response.status_code, response.reason, response.json())
 
-def create_project(args):
-    book = {
-        "code": args.code,
-        "title": args.title,
+def get_project_details(code: str) -> dict[str, Any]:
+    title = input("Enter project title: ")
+    series = input("Enter series title (optional): ")
+    goal = input("Enter book length goal in words (default 100,000): ")
+    return {
+        "code": code,
+        "title": title,
+        "series": series,
+        "goal": int(goal)
     }
-    if not args.goal:
+def create_project(args):
+    book = get_project_details(args.code)
+    if not book["goal"]:
         book["goal"] = 100000
-    else:
-        book["goal"] = args.goal
-    if args.series:
-        book["series"] = args.series
     post_project(book)
 def parse_create_project(project_subparsers):
     create_parser = project_subparsers.add_parser("create")
     create_parser.add_argument("--code", "-c", required=True)
-    create_parser.add_argument("--title", "-t", required=True)
-    create_parser.add_argument("--series", "-s", required=False)
-    create_parser.add_argument("--goal", "-g", required=False)
     create_parser.set_defaults(func=create_project)
 

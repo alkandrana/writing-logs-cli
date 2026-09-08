@@ -8,9 +8,9 @@ from wlogs.library.dates import print_list_dict
 from wlogs.library.file.scenes import load_yaml_header
 from wlogs.library.file.search import find_file
 from .string_utils import split_compound_id
-from .log_utils import get_scenes_in_log, get_projects_from_log
-from wlogs.library.api.crud import get_record_by_code
-from wlogs.library.dates import print_list
+from .log_utils import get_projects_from_scenes, check_sync_projects, check_sync_scenes
+from wlogs.library.api.crud import get_record_by_code, check_record_exists
+from ...projects.create import create_project
 
 def get_scene_from_repo(code: str):
     path = find_file(code.upper())
@@ -77,7 +77,7 @@ def sync_scenes(args):
         scenes = list_scenes_in_project(args.code)
         sync_scenes_in_project(scenes)
     else:
-        book_codes = get_projects_from_log()
+        book_codes = get_projects_from_scenes()
         for code in book_codes:
             sync_scenes_in_project(code)
 
@@ -91,22 +91,29 @@ def sync_scenes_in_project(scenes):
     print("Posting scenes to API: ")
     for scene in scenes:
         post_record(scene, "scenes")
-def sync_log_scenes(_):
+def sync_log_projects():
     # 1. get scenes in log
-    print("\nCollecting scenes referenced in log file...")
-    scene_codes = get_scenes_in_log()
+    print("\nCollecting projects referenced in log file...")
+    project_complex = get_projects_from_scenes()
     #2. check all scenes against the api
+    print("\nGetting list of projects that need to be synced...")
+    projects_to_add = check_sync_projects(project_complex)
+    #3. add projects to api
+    if len(projects_to_add) > 0:
+        for p in projects_to_add:
+            create_project(p)
+
+def sync_log_scenes():
+    print("\nCollecting scenes referenced in log file...")
+    project_complex = get_projects_from_scenes()
     print("\nGetting list of scenes that need to be synced...")
-    scenes_to_add = check_sync_status(scene_codes)["local"]
-    if len(scenes_to_add) > 0:
-    #3 check scenes against the filesystem
-        scene_details = []
-        print("\nSearching local filesystem for scene details...")
-        for code in scenes_to_add:
-            header = get_scene_from_repo(code)
-            print(f"\n{header}")
-            scene_details.append(header)
-        #4 convert yaml headers to post details
+    scenes_to_add = check_sync_scenes(project_complex)
+    for proj in scenes_to_add:
+        scenes = scenes_to_add[proj]
+        if not check_record_exists(proj, "projects"):
+            create_project(proj)
+        #for sc in scenes:
+
         batch = []
         print("\nConverting scene headers to API-friendly payloads...")
         for scene in scene_details:

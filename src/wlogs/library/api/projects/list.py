@@ -1,3 +1,4 @@
+import sys
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
 from wlogs.commands import node_url, send_request
@@ -17,6 +18,7 @@ def get_projects():
             res.reason,
             res.json(),
         )
+        sys.exit(0)
 
 
 def print_projects(projects):
