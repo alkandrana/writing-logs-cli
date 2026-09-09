@@ -4,7 +4,7 @@ import sys
 from wlogs import load_config
 from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
-from wlogs.library.api.crud import get_status_values
+from wlogs.library.api.crud import get_status_values, check_record_exists
 from wlogs.library.api.projects.list import get_projects
 from wlogs.library.api.statuses.list import get_status_id
 
@@ -56,7 +56,7 @@ def get_scene_details(scene):
     except ValueError:
         print("Scene number and words must be valid integers")
         sys.exit(1)
-    scene["status"] = get_status_id(status)
+    scene["statusId"] = get_status_id(status)
 
 def get_scene_codes(code):
     if "-" in code:
@@ -75,6 +75,9 @@ def get_scene_codes(code):
 def create_scene(args):
     code = args.code
     codes = get_scene_codes(code)
+    if not check_record_exists(codes["project"], "projects"):
+        print(f"Scene's project does not exist. Create it with 'wlogs projects create -c {codes['project']}'")
+        sys.exit(1)
     project_id = get_project_id(codes["project"])
     scene = {
         "code": codes["scene"],
@@ -82,7 +85,7 @@ def create_scene(args):
     }
     get_scene_details(scene)
     print(scene)
-    # post_scene(scene)
+    post_scene(scene)
 
 
 def parse_create_scene(scene_subparsers):

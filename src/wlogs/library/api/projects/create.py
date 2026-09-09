@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Any
 
 from wlogs import load_config
@@ -23,16 +24,23 @@ def get_project_details(code: str) -> dict[str, Any]:
     title = input("Enter project title: ")
     series = input("Enter series title (optional): ")
     goal = input("Enter book length goal in words (default 100,000): ")
-    return {
+    book = {
         "code": code,
         "title": title,
-        "series": series,
-        "goal": int(goal)
+        "series": series
     }
+    if not goal:
+        book['goal'] = 100000
+    else:
+        try:
+            book['goal'] = int(goal)
+        except ValueError:
+            print("Goal must be a valid integer.")
+            sys.exit(1)
+    return book
+
 def create_project(args):
     book = get_project_details(args.code)
-    if not book["goal"]:
-        book["goal"] = 100000
     post_project(book)
 def parse_create_project(project_subparsers):
     create_parser = project_subparsers.add_parser("create")

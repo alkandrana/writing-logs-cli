@@ -12,13 +12,14 @@ Common commands are located in the "commands" directory; the "library" directory
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/alkandrana/writing-logs-cli.git](https://github.com/alkandrana/writing-logs-cli.git)
+   git clone https://github.com/alkandrana/writing-logs-cli.git
    cd writing-logs-cli
+   
 2. **Create and activate a virtual environment:**
 ```python -m venv .venv```
 
 # On macOS/Linux:
-```source venv/bin/activate```
+```source .venv/bin/activate```
 
 # On Windows:
 ```.venv\Scripts\activate```
