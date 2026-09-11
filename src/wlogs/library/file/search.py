@@ -1,13 +1,13 @@
 import os
 import sys
 from pathlib import Path
-
+from collections.abc import Generator
 from wlogs import load_config
 
 
 def fast_search(
-    target_filename, target_dir: Path | str = Path.home(), full_name: bool = False
-):
+        target_filename: str, target_dir: Path | str | None = None, full_name: bool = False
+        ) -> Generator[Path]:
     # os.scandir returns an iterator that points directly to system memory
     for entry in os.scandir(target_dir):
         if not entry.name.startswith(".") and not entry.name in ["Library", "Downloads"]:
@@ -29,8 +29,10 @@ def fast_search(
 
 
 def find_file(
-    target_filename, target_dir: Path | str = Path.home(), full_name: bool = False
+        target_filename: str, target_dir: Path | str | None = None, full_name: bool = False
 ):
+    if not target_dir:
+        target_dir = Path.home()
     options = [p for p in fast_search(target_filename, target_dir, full_name)]
     if len(options) == 1:
         choice = options[0]
@@ -46,7 +48,7 @@ def find_file(
         # sys.exit(1)
     return Path(choice)
 
-def get_book_path(book_id):
+def get_book_path(book_id: str):
     path = find_file(book_id, target_dir=load_config()["novel_home"], full_name=True)
     if path is None or not path.exists():
         print("File path not found. Verify that the book id corresponds to all or part of a directory name and try again.")

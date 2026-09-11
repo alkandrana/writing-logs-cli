@@ -1,14 +1,14 @@
 import json
+import os
 import sys
 from pathlib import Path
-import os
 
 
-def load_config():
+def load_config() -> dict[str, str]:
     config_path = get_store_path() / "config.json"
     if config_path.exists():
         with open(config_path, "r") as f:
-            config = json.load(f)
+            config: dict[str, str] = json.load(f)
         if "api_url" not in config or "log_file" not in config or "novel_home" not in config:
             print(
                 "Config not complete. Set it up with 'wlogs config log' or 'wlogs config api' or 'wlogs config novel'"

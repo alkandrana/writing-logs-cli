@@ -1,7 +1,12 @@
-from wlogs import load_config
-import sys, requests
-import maskpass
+import sys 
+
 import keyring as kr
+import maskpass
+import requests
+from typing import Any
+
+from wlogs import load_config
+
 # AUTH WORKFLOW
 # 1. User sends request
 # 2. Attempt to load token from keyring
@@ -23,7 +28,7 @@ def check_server_health(url):
         return False
 
 
-def send_auth_request(request):
+def send_auth_request(request: dict[str, Any]):
     access_token = get_access_token()
     headers = {
         "Authorization": f"Bearer {access_token}",

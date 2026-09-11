@@ -1,34 +1,19 @@
-import os
+import csv
 import sys
-
+from pathlib import Path
 from wlogs import load_config
 from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
-from wlogs.library.api.crud import get_status_values, check_record_exists
+from wlogs.library.api.crud import check_record_exists
 from wlogs.library.api.projects.list import get_projects
 from wlogs.library.api.statuses.list import get_status_id
+from wlogs.library.file.search import find_file
 
 
-def build_body(args, project_id):
-    statuses = get_status_values()
-    print(statuses)
-    body = {"code": args.code, "name": args.name, "projectId": project_id}
-    if args.sequence:
-        body["sequence"] = args.sequence
-    if args.words:
-        body["words"] = args.words
-    if args.status:
-        status_id = [st["id"] for st in statuses if st["name"].lower() == args.status.lower()][0]
-        body["statusId"] = status_id
-    if args.mc:
-        body["plotline"] = args.mc
-    return body
-
-
-def post_scene(body):
-    scene_req = {
+def post_scene(body: dict[str, str | int]):
+    scene_req: dict[str, object] = {
         "method": "POST",
-        "endpoint": f"{load_config()["api_url"]}/scenes",
+        "endpoint": f"{load_config()['api_url']}/scenes",
         "payload": body,
     }
     print(body)
@@ -40,9 +25,11 @@ def post_scene(body):
     else:
         print("There was an error: ", response.status_code, response.reason, response.json())
 
+
 def get_scene_details(scene):
+    print(f"\nAdd details for scene {scene['code']}: ")
     name = input("Enter scene name/description: ")
-    sequence = input("Enter scene number (where in the story the scene falls; optional: ")
+    sequence = input("Enter scene number (where in the story the scene falls; optional): ")
     words = input("Enter word count for scene: ")
     status = input("Enter scene status (pending, writing, finished, aborted; default pending): ")
     plotline = input("Enter name of POV character for this scene (optional): ")
@@ -51,14 +38,14 @@ def get_scene_details(scene):
     scene["plotline"] = plotline
     scene["chapter"] = chapter
     try:
-        scene["sequence"] = int(sequence)
-        scene["words"] = int(words)
+        scene["sequence"] = int(sequence) if sequence else 0
+        scene["words"] = int(words) if words else 0
     except ValueError:
         print("Scene number and words must be valid integers")
         sys.exit(1)
     scene["statusId"] = get_status_id(status)
 
-def get_scene_codes(code):
+def get_scene_codes(code: str):
     if "-" in code:
         project = code[0:code.index("-")]
         scene_code = code
@@ -84,7 +71,6 @@ def create_scene(args):
         "projectId": project_id
     }
     get_scene_details(scene)
-    print(scene)
     post_scene(scene)
 
 

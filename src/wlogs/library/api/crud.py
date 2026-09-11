@@ -4,14 +4,14 @@ import sys
 from typing import Any
 
 
-def get_record_id(code, endpoint):
+def get_record_id(code: str, endpoint: str) -> list[dict[str, object]] | dict[str, object]:
     request = {
         "method": "GET",
-        "endpoint": f"{load_config()["api_url"]}/{endpoint}/code/{code}",
+        "endpoint": f"{load_config()['api_url']}/{endpoint}/code/{code}",
     }
     res = send_auth_request(request)
     if res.status_code == 404:
-        print(f"Record {code} not found at {request["endpoint"]}.")
+        print(f"Record {code} not found at {request['endpoint']}.")
         sys.exit(1)
     else:
         return res.json()

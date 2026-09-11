@@ -4,18 +4,18 @@ from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
 
 
-def get_status_id(name):
+def get_status_id(name: str) -> str:
     if name not in ["pending", "writing", "finished", "aborted"]:
         print("Invalid status name.")
         sys.exit(1)
     else:
         request = {
             "method": "GET",
-            "endpoint": f"{load_config()["api_url"]}/status/{name}",
+            "endpoint": f"{load_config()['api_url']}/status/{name}",
         }
         res = send_auth_request(request)
         if 200 <= res.status_code < 300:
-            options = res.json()
+            options: list[dict[str, str]] = res.json()
             if len(options) == 1:
                 return options[0]["id"]
             elif len(options) > 1:

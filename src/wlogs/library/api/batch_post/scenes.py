@@ -48,7 +48,7 @@ def build_scene_from_file(scene_header, project_id):
         return {}
 
 
-def get_scene_details(book_code):
+def get_scene_details_from_file(book_code):
     # check whether project exists
     project_id = get_project_id(book_code)
     if not project_id:
@@ -109,7 +109,7 @@ def batch_scenes(args):
     if args.source == "api":
         transfer(node_url, "scenes", format_scenes)
     elif args.source == "file":
-        scenes_to_post = get_scene_details(args.code)
+        scenes_to_post = get_scene_details_from_file(args.code)
         for sc in scenes_to_post:
             post_record(sc, "scenes")
     else:

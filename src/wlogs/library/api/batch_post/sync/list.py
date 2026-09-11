@@ -1,18 +1,22 @@
 from .log_utils import check_sync_projects, check_sync_scenes
 from .log_utils import get_projects_from_scenes, get_scenes_in_log
+
 def print_all_scenes(args):
-    scene_codes = get_scenes_in_log()
-    projects = get_projects_from_scenes(scene_codes) # returns a dictionary of project codes + scene lists
-    for proj in projects.keys():
+    projects = get_projects_from_scenes() # returns a dictionary of project codes + scene lists
+    for proj in projects:
         print(f"Scenes for project: {proj.upper()}")
         print(projects[proj])
     if args.sync:
-        print(f"Checking for projects that need to be synced...")
+        print("Checking for projects that need to be synced...")
         projects_to_create = check_sync_projects(projects)
         print("Projects that need to be synced: ", projects_to_create)
         print("Checking for scenes that need to be synced...")
-        scenes_to_create = check_sync_scenes(projects)
-        print("Scenes that need to be synced: ", scenes_to_create)
+        scenes_to_create: dict[str, list[str]] = check_sync_scenes(projects)
+        print("Scenes that need to be synced: ")
+        for proj in scenes_to_create:
+            if len(scenes_to_create[proj]) > 0:
+                print(proj.upper())
+                print(scenes_to_create[proj])
 
 
 
