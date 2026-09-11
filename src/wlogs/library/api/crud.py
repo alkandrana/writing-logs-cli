@@ -41,6 +41,7 @@ def get_record_by_id(id, endpoint):
     else:
         print("An error occurred: ", res.status_code, res.reason, res.json())
         sys.exit(1)
+        
 def check_record_exists(code: str, endpoint: str):
     request = {
         "method": "GET",

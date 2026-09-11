@@ -39,12 +39,12 @@ def check_sync_projects(projects: dict[str, list[str]]) -> list[str]:
     return projects_to_create
 
 def check_sync_scenes(projects: dict[str, list[str]]):
-    scenes_to_create = {}
+    scenes_to_create: dict[str, list[str]] = {}
     for key, value in projects.items():
-        if key not in scenes_to_create:
-            scenes_to_create[key] = []
         for code in value:
-            if code not in scenes_to_create[key]:
-                if not check_record_exists(f"{key}-{code}", "scenes"):
+            if not check_record_exists(f"{key}-{code}", "scenes"):
+                if key not in scenes_to_create:
+                    scenes_to_create[key] = []
+                if code not in scenes_to_create[key]:
                     scenes_to_create[key].append(code)
     return scenes_to_create

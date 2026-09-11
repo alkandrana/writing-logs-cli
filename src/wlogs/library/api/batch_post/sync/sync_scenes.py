@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import Any
 
 from wlogs.commands.new_scene import convert_yaml_to_payload
@@ -13,6 +14,7 @@ from .log_utils import get_projects_from_scenes, check_sync_projects, check_sync
 from wlogs.library.api.crud import get_record_by_code, check_record_exists
 from ...projects.create import get_project_details, post_project
 from wlogs.commands import get_project_id
+from ...scenes.scene_utils import get_csv_path, get_scene_details_from_csv
 
 # def get_scene_from_repo(code: str):
 #     path = find_file(code.upper())
@@ -113,23 +115,35 @@ def sync_log_projects():
 
 def sync_log_scenes():
     print("\nCollecting scenes referenced in log file...")
-    project_complex = get_projects_from_scenes()
+    project_complex = get_projects_from_scenes() # returns a dict where keys are project codes and values are lists of scene codes
     print("\nGetting list of scenes that need to be synced...")
     scenes_to_add = check_sync_scenes(project_complex)
+    print(scenes_to_add)
     for proj in scenes_to_add:
-        scenes = scenes_to_add[proj]
+        print(f"Getting scene details for project {proj}")
+        filepath = get_csv_path(proj)
+        scene_details = get_scene_details_from_csv(filepath) if filepath else []
+        codes_to_add: list[str] = scenes_to_add[proj]
         if not check_record_exists(proj, "projects"):
             project = get_project_details(proj)
             post_project(project)
         project_id = get_project_id(proj)
-        for i, sc in enumerate(scenes):
-            print(f"Creating scene {i + 1} of {len(scenes)}")
-            scene = {
-                "code": f"{proj.upper()}-{sc.upper()}",
-                "projectId": project_id,
-            }
-            get_scene_details(scene)
-            post_scene(scene)
+        for i, sc in enumerate(codes_to_add):
+            print(f"Creating scene {i + 1} of {len(codes_to_add)}")
+            code = f"{proj}-{sc}"
+            results = [sc for sc in scene_details if sc['code'].lower() == code.lower()]
+            if len(results) > 1:
+                print(f"Scene code {code} is not unique.")
+                sys.exit(1)
+            elif len(results) < 1:
+                print(f"Scene code {code} not found in file.")
+                project_id = get_project_id(proj)
+                scene = { "code": code, "projectId": project_id }
+                get_scene_details(scene)
+                post_scene(scene)
+            else: 
+                scene = results[0]
+                post_scene(scene)
     print(f"Synced scenes: {scenes_to_add}")
 
 def sync_log(args):
@@ -144,6 +158,6 @@ def sync_log(args):
 
 def parse_batch_sync(sync_subparsers):
     project_parser = sync_subparsers.add_parser("log")
-    project_parser.add_argument("--scenes", "-sc", required=False, help="Sync scenes only (you will be prompted to create projects that don't already exist)")
-    project_parser.add_argument("--projects", "-p", required=False, help="Sync projects only.")
+    project_parser.add_argument("--scenes", "-sc", action="store_true", help="Sync scenes only (you will be prompted to create projects that don't already exist)")
+    project_parser.add_argument("--projects", "-p", action="store_true", help="Sync projects only.")
     project_parser.set_defaults(func=sync_log)

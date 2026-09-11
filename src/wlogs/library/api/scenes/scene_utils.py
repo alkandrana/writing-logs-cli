@@ -8,11 +8,14 @@ from wlogs.commands import get_project_id
 def get_csv_path(code: str) -> Path | None:
     log_loc = Path(load_config()["log_file"])
     log_dir = log_loc.parent
-    search = [f for f in log_dir.rglob(f"*{code}*")]
+    search = [f for f in log_dir.rglob(f"*{code.upper()}*")]
     if len(search) == 1:
         filepath = search[0]
+    elif len(search) == 0:
+        print(f"No file found for project {code}. You will need to manually enter details for any scenes in this project.")
+        filepath = None
     else:
-        print("Something went wrong.")
+        print(f"Something went wrong: {search}")
         sys.exit(1)
     return filepath
     
@@ -31,9 +34,9 @@ def get_scene_details_from_csv(filepath: Path) -> list[dict[str, str | int]]:
             project_id = 0
         scene = {
                     'code': row['ID'], 
-                    'sequence': row['Sequence'], 
+                    'sequence': row['Sequence'] if row['Sequence'] else 0, 
                     'name': row['Name'], 
-                    'words': row['Words'], 
+                    'words': row['Words'] if row['Words'] else 0, 
                     'plotline': row['Plotline'], 
                     'statusId': status_id, 
                     'chapter': row.get('Chapter', None),
