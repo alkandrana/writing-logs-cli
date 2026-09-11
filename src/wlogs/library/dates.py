@@ -41,10 +41,10 @@ def format_dates(dates: dict[str, str]):
         sys.exit(1)
 
 
-def join_date(time, date):
+def join_date(time: str, date: str):
     timestamp = time
     if time and len(time.split("T")) < 2 and len(time.split(" ")) < 2:
-        timestamp = "T".join([date, time])
+        timestamp = f"{date}T{time}"
     return timestamp
 
 

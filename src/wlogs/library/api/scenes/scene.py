@@ -4,7 +4,7 @@ from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
 from wlogs.library.api.crud import get_record_id
 
-def get_one_scene(code: str):
+def get_one_scene(code: str) -> list[dict[str, str | int]]:
     request = {
         "method": "GET",
         "endpoint": f"{load_config()['api_url']}/scenes/code/{code}",

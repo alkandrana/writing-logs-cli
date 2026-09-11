@@ -1,7 +1,8 @@
 import sys
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
+import pandas as pd
 from wlogs.commands import node_url, send_request
+from wlogs.library.api.auth import send_auth_request
 
 def get_projects():
     request = {
@@ -23,19 +24,22 @@ def get_projects():
 
 def print_projects(projects):
     print(f"Found {len(projects)} projects:\n")
-    header = ""
-    for key in projects[0].keys():
-        if "author" not in key or key == "author":
-            header += f"{key}\t"
-    print(header)
-    for rec in projects:
-        row = ""
-        for key, value in rec.items():
-            if "author" not in key:
-                row += f"{value}\t"
-            elif key == "author":
-                row += f"{value['userName']}\t"
-        print(row)
+    project_list: list[dict[str, str | int]] = [{'code': proj['code'], 'title': proj['title'], 'series': proj['series'], 'goal': proj['goal']} for proj in projects]
+    dataframe = pd.DataFrame(project_list)
+    print(dataframe.from_dict(project_list))
+    #header = ""
+    #for key in projects[0].keys():
+    #    if "author" not in key or key == "author":
+    #        header += f"{key}\t"
+    #print(header)
+    #for rec in projects:
+    #    row = ""
+    #    for key, value in rec.items():
+    #        if "author" not in key:
+    #            row += f"{value}\t"
+    #        elif key == "author":
+    #            row += f"{value['userName']}\t"
+    #    print(row)
 
 
 def view_all(args):

@@ -76,7 +76,7 @@ def get_patch_payload(value, prop):
         }]
     return payload
 
-def post_record(data, endpoint):
+def post_record(data: dict[str, str | int], endpoint: str):
     request = {
         "method": "POST",
         "endpoint": f"{load_config()["api_url"]}/{endpoint}",

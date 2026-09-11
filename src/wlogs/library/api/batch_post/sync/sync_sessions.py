@@ -1,5 +1,6 @@
 import sys
 import csv
+import argparse
 from pathlib import Path
 
 from wlogs import load_config
@@ -9,7 +10,7 @@ from wlogs.library.api.scenes.scene import get_one_scene
 from wlogs.library.dates import to_zulu, join_date
 
 # 1. get sessions from log
-def get_records_from_csv(path):
+def get_records_from_csv(path: str):
     if Path(path).exists():
         with open(path) as f:
             reader = csv.DictReader(f)
@@ -20,11 +21,11 @@ def get_records_from_csv(path):
         print("Could not find file.")
         sys.exit(1)
 # 2. format sessions, accounting for variations in data
-def format_local_session(ses):
+def format_local_session(ses: dict[str, str | int]):
     print("Fetching current scene ID:")
-    scene_id = get_scene_id(ses["scene_id"])
-    ses["start"] = join_date(ses["start"], ses["date"])
-    ses["stop"] = join_date(ses["stop"], ses["date"])
+    scene_id = get_scene_id(str(ses["scene_id"]))
+    ses["start"] = join_date(str(ses["start"]), str(ses["date"]))
+    ses["stop"] = join_date(str(ses["stop"]), str(ses["date"]))
     session = {
         "date": ses["date"],
         "startTime": to_zulu(ses["start"]) if ses["start"] else None,
@@ -34,61 +35,19 @@ def format_local_session(ses):
         "comments": ses["note"],
     }
     return session
-#3. convert sessions to payload
 
-#4 batch post to the api
-# post_record(payload, "sessions")
-def get_scene_id(code):
-    if "-" in code:
-        parts = code.split("-")
-        project_code = parts[0]
-        code = parts[1]
-    res = get_one_scene(code)
-    if 200 <= res.status_code < 300:
-        scene = res.json()
-        return scene["id"]
-    else:
-        print("An error occurred: ", res.status_code, res.reason)
-        sys.exit(1)
+def get_scene_id(code: str) -> str | int:
+    scene = get_one_scene(code)[0]
+    scene_id = scene["id"]
+    return scene_id
 
-
-
-
-
-def format_node_session(ses):
-    scene_id = get_scene_id(ses["scene"]["code"])
-    del (ses["scene"], ses["id"])
-    ses["startTime"] = to_zulu(join_date(ses["startTime"], ses["date"]))
-    ses["stopTime"] = to_zulu(join_date(ses["stopTime"], ses["date"]))
-    ses["sceneId"] = scene_id
-    return ses
-
-
-def format_sessions(sessions, formatter):
-    sessionlist = []
-    for ses in sessions:
-        # different between api and file
-        session = formatter(ses)
-        sessionlist.append(session)
-    return sessionlist
-
-
-def batch_sessions(args):
-    if args.source == "api":
-        transfer(args.path, "sessions", format_sessions)
-    elif args.source == "file":
-        sessions = get_records_from_csv(load_config()['log_file'])
-        batch = []
-        for s in sessions:
-            batch.append(format_local_session(s))
-        for p in batch:
-            post_record(p, "sessions")
-    else:
-        print("Source must be one of 'api' or 'file'")
-        sys.exit(1)
-
+def batch_sessions(_: argparse.Namespace):
+    sessions = get_records_from_csv(load_config()['log_file'])
+    batch = [format_local_session(s) for s in sessions]
+    for p in batch:
+        post_record(p, "sessions")
 
 def parse_batch_sessions(sync_subparsers):
     session_parser = sync_subparsers.add_parser("sessions")
-    session_parser.add_argument("--source", "-s", required=True)
     session_parser.set_defaults(func=batch_sessions)
+
