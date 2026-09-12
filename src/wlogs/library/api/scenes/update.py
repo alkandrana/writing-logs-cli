@@ -12,7 +12,12 @@ def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:
             "value": value 
     }
     
-def send_update_request(request):
+def send_update_request(payload, scene_id):
+    request = {
+        "method": "PATCH",
+        "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}",
+        "payload": payload
+    }
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
         print("Scene updated successfully")
@@ -29,7 +34,6 @@ def update_scene(args: argparse.Namespace):
     payload = []
     if args.words:
         payload.append(build_patch("words", args.words))
-
     if args.name:
         payload.append(build_patch("name", args.name))
     if args.sequence:
@@ -41,12 +45,7 @@ def update_scene(args: argparse.Namespace):
         payload.append(build_patch("plotline", args.plotline))
     if args.chapter:
         payload.append(build_patch("chapter", args.chapter))
-    request = {
-        "method": "PATCH",
-        "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}",
-        "payload": payload
-    }
-    send_update_request(request)
+    send_update_request(payload)
 
 def parse_update_scene(scene_subparsers):
     update_parser = scene_subparsers.add_parser("update")
