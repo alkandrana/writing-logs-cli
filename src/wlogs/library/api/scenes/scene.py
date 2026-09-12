@@ -1,9 +1,7 @@
 import sys
 from typing import Any
 from wlogs import load_config
-from wlogs.commands import get_project_id
 from wlogs.library.api.auth import send_auth_request
-from wlogs.library.api.crud import get_record_id
 
 def get_scenes_by_code(code: str) -> list[dict[str, Any]]:
     request = {
@@ -13,6 +11,9 @@ def get_scenes_by_code(code: str) -> list[dict[str, Any]]:
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
         return res.json()
+    elif res.status_code == 404:
+        print(f"Scene {code} doesn't exist yet. Create it with 'wlogs scenes create {code}'.")
+        sys.exit(0)
     else:
         print(f"Error getting scene {res.status_code} {res.json()}")
         sys.exit(1)
@@ -40,8 +41,26 @@ def get_scene_by_name(name: str):
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
         return res.json()
+    elif res.status_code == 404:
+        print(f"Scene {name} doesn't exist yet. Create it with 'wlogs scenes create <scene code>.'")
+        sys.exit(0)
     else:
         print(f"Error getting scene: {res.status_code} {res.json()} from {request['endpoint']}")
+        sys.exit(1)
+
+def get_scene_by_id(scene_id: int) -> dict[str, str | int]:
+    request = {
+            "method": "GET",
+            "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}"
+            }
+    res = send_auth_request(request)
+    if 200 <= res.status_code < 300:
+        return res.json()
+    elif res.status_code == 404:
+        print("No scene found matching that id.")
+        sys.exit(0)
+    else:
+        print(f"An error occurred: {res.status_code} {res.json()} from {request['endpoint']}")
         sys.exit(1)
 
 def print_scene(scenelist):

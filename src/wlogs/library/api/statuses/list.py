@@ -30,3 +30,20 @@ def get_status_id(name: str) -> str:
         else:
             print(f"An error occurred: {res.status_code} {res.json()}")
             sys.exit(1)
+            
+def get_status_name(status_id: int) -> str:
+    request = {
+            "method": "GET",
+            "endpoint": f"{load_config()['api_url']}/status/{status_id}"
+            }
+    res = send_auth_request(request)
+    if 200 <= res.status_code < 300:
+        status = res.json()
+        return status['name']
+    elif res.status_code == 404:
+        print("No status found for that id.")
+        sys.exit(1)
+    else:
+        print(f"An error occurred: {res.status_code} {res.json()}")
+        sys.exit(1)
+

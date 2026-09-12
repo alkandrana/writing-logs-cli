@@ -2,12 +2,15 @@ import csv
 import sys, json
 from datetime import datetime, date
 from pathlib import Path
+
+from wlogs.library.api.crud import get_status_values
 from ..library.api.scenes.update import build_patch, send_update_request
 from ..library.api.sessions.create_session import post_session
 from .. import get_store_path, load_config
 from ..library.dates import to_zulu, print_dict
-from ..library.api.scenes.scene import get_scene_id
+from ..library.api.scenes.scene import get_scene_id, get_scene_by_id, get_one_scene
 from ..library.file.search import find_file
+from ..library.api.statuses.list import get_status_name, get_status_id
 
 # Construct dict of starting session data
 def initialize(scene):
@@ -73,6 +76,10 @@ def save_local(data):
 def convert_to_session(data):
     print(f"Local session: {data}")
     scene_id = get_scene_id(data["scene"])
+    scene = get_scene_by_id(scene_id)
+    if get_status_name(int(scene['statusId'])).lower() == "pending":
+        status_update = build_patch("statusId", get_status_id('writing'))
+        send_update_request(status_update, scene_id)
     return {
         "date": data["date"],
         "startTime": to_zulu(data["start_time"]) if data["start_time"] else data["start_time"],
@@ -82,8 +89,7 @@ def convert_to_session(data):
     }
 
 # send request to update scene word count to reflect session word count
-def update_scene_count(scene_code: str, words: int):
-    scene_id = get_scene_id(scene_code)
+def update_scene_count(scene_id: str, words: int):
     payload = [build_patch("words", words)]
     send_update_request(payload, scene_id) 
         
@@ -95,6 +101,7 @@ def start(args):
     print("Session started: ")
     for key, value in data.items():
         print(f"{key}: {value}")
+
 # stop session command
 def stop(args):
     data = build_session(args.words)
@@ -191,6 +198,8 @@ def parse_session(subparsers):
 
     stop_parser = session_subparsers.add_parser("stop")
     stop_parser.add_argument("--words", "-w", help="Words Written")
+    stop_parser.add_argument("--end_scene", "-es", required=False, help="Change scene status to finished.")
+
     stop_parser.set_defaults(func=stop)
 
     save_parser = session_subparsers.add_parser("save")
