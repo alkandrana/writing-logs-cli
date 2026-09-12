@@ -1,19 +1,7 @@
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
-from ..scenes.scene import get_one_scene
+from ..scenes.scene import get_scene_id
 from wlogs.library.dates import to_zulu, format_dates
-
-#   REDUNDANT
-# def get_scene_id(code):
-#     print(f"Fetching scene with code {code}...")
-#     res = get_one_scene(code)
-#     if res.status_code == 404:
-#         print("No scene with that code.")
-#         sys.exit(1)
-#     else:
-#         scene = res.json()
-#     return scene["id"]
-
 
 def build_session_body(args):
     format_dates({"date": args.date, "start": args.start, "stop": args.stop})

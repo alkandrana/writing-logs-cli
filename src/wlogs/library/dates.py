@@ -41,11 +41,12 @@ def format_dates(dates: dict[str, str]):
         sys.exit(1)
 
 
-def join_date(time: str, date: str):
-    timestamp = time
+def join_date(time: str | None, date: str):
+    if time == "None":
+        time = None
     if time and len(time.split("T")) < 2 and len(time.split(" ")) < 2:
-        timestamp = f"{date}T{time}"
-    return timestamp
+        time = f"{date}T{time}"
+    return time
 
 
 def print_list(lst: list[Any]):
