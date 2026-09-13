@@ -1,6 +1,5 @@
 import argparse
 
-from .library.api.batch_post.sync import parse_sync
 from .library.api.projects import parse_projects
 from .library.api.scenes import parse_scenes
 from .commands.session import parse_session
@@ -9,7 +8,6 @@ from .commands.batch import parse_batch_scenes
 from .commands.plot import parse_plotter
 from .commands.new_scene import parse_new_scene
 from .commands.count import parse_count
-from .library.file import parse_file
 from .library.api.auth import parse_auth
 from .commands.project import parse_project
 from .library.api.sessions import parse_sessions
@@ -24,9 +22,7 @@ def main():
     parse_new_scene(subparsers)
     parse_session(subparsers)
     parse_count(subparsers)
-    parse_sync(subparsers)
     parse_batch_scenes(subparsers)
-    parse_file(subparsers)
     parse_plotter(subparsers)
     parse_project(subparsers)
     parse_projects(subparsers)
