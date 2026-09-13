@@ -15,10 +15,15 @@ from ..library.api.statuses.list import get_status_name, get_status_id
 # Construct dict of starting session data
 def initialize(scene):
     session_data = {
-        "date": datetime.now().astimezone().date(),
+        "date": datetime.now().astimezone().date().isoformat(),
         "start_time": datetime.isoformat(datetime.now().astimezone()),
         "scene": scene,
     }
+    try: 
+        json.dumps(session_data)
+    except TypeError:
+        print("Error: session data could not be serialized.")
+        sys.exit(1)
     return session_data
 
 # save start data to temp file
@@ -76,6 +81,7 @@ def save_local(data):
 def convert_to_session(data):
     print(f"Local session: {data}")
     scene_id = get_scene_id(data["scene"])
+    # update scene status if scene hadn't been started yet
     scene = get_scene_by_id(scene_id)
     if get_status_name(int(scene['statusId'])).lower() == "pending":
         status_update = build_patch("statusId", get_status_id('writing'))
@@ -89,7 +95,9 @@ def convert_to_session(data):
     }
 
 # send request to update scene word count to reflect session word count
-def update_scene_count(scene_id: str, words: int):
+def update_scene_count(scene_id: int, words: int):
+    scene = get_scene_by_id(scene_id)
+    words += int(scene['words'])
     payload = [build_patch("words", words)]
     send_update_request(payload, scene_id) 
         
@@ -112,8 +120,9 @@ def stop(args):
         save_local(data)
         path = get_store_path() / "session.json"
         path.unlink(missing_ok=True)
-        print("Session saved")
+        print(f"Session saved: {session}")
         update_scene_count(session['sceneId'], session['words'])
+        print(f"Scene count updated for scene {data['scene']}")
     else:
         print("Unable to save session to API.")
 
@@ -157,7 +166,7 @@ def novelwrite_session(args):
         start = datetime.fromisoformat(ses_dict["start"]).astimezone() if "start" in ses_dict else None
         stop = datetime.fromisoformat(ses_dict["end"]).astimezone() if "end" in ses_dict else None
         session = {
-            "date": datetime.strftime(start, "%Y-%m-%d") if start else datetime.now().astimezone().date(),
+            "date": datetime.strftime(start, "%Y-%m-%d") if start else datetime.now().astimezone().date().isoformat(),
             "start_time": to_zulu(start.isoformat()) if start else None,
             "stop_time": to_zulu(stop.isoformat()) if stop else None,
             "words": args.words,
@@ -172,7 +181,7 @@ def status(_):
     else:
         with open(path, "r") as f:
             data = json.load(f)
-        print("Current session: ")
+        print(f"Current session: {data}")
         print_dict(data)
 
 # cancel current session (command)
@@ -182,8 +191,7 @@ def cancel(_):
         with open(path, "r") as f:
             data = json.load(f)
         path.unlink()
-        print("Session cancelled: ")
-        print_dict(data)
+        print(f"Session cancelled: {data}")
     else:
         print("No session running.")
 

@@ -11,7 +11,7 @@ def get_status_id(name: str) -> str:
     else:
         request = {
             "method": "GET",
-            "endpoint": f"{load_config()['api_url']}/status/{name}",
+            "endpoint": f"{load_config()['api_url']}/status/name/{name}",
         }
         res = send_auth_request(request)
         if 200 <= res.status_code < 300:
