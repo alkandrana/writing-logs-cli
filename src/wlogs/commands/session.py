@@ -1,16 +1,17 @@
 import csv
-import sys, json
-from datetime import datetime, date
+import json
+import sys
+from datetime import datetime
 from pathlib import Path
 
-from wlogs.library.api.crud import get_status_values
-from ..library.api.scenes.update import build_patch, send_update_request
-from ..library.api.sessions.create_session import post_session
-from .. import get_store_path, load_config
-from ..library.dates import to_zulu, print_dict
-from ..library.api.scenes.scene import get_scene_id, get_scene_by_id, get_one_scene
-from ..library.file.search import find_file
-from ..library.api.statuses.list import get_status_name, get_status_id
+from wlogs import get_store_path, load_config
+from wlogs.library.api.scenes.scene import get_scene_by_id, get_scene_id
+from wlogs.library.api.scenes.update import build_patch, send_update_request
+from wlogs.library.api.sessions.create_session import post_session
+from wlogs.library.api.statuses.list import get_status_id, get_status_name
+from wlogs.library.dates import print_dict, to_zulu
+from wlogs.library.file.search import find_file
+
 
 # Construct dict of starting session data
 def initialize(scene):
@@ -85,7 +86,7 @@ def convert_to_session(data):
     scene = get_scene_by_id(scene_id)
     if get_status_name(int(scene['statusId'])).lower() == "pending":
         status_update = build_patch("statusId", get_status_id('writing'))
-        send_update_request(status_update, scene_id)
+        send_update_request([status_update], scene_id)
     return {
         "date": data["date"],
         "startTime": to_zulu(data["start_time"]) if data["start_time"] else data["start_time"],
@@ -112,38 +113,35 @@ def start(args):
 
 # stop session command
 def stop(args):
-    data = build_session(args.words)
+    data = build_session(int(args.words))
     print("Session to save: ", data)
-    session = convert_to_session(data)
-    status = post_session(session)
-    if 200 <= status.status_code < 300:
-        save_local(data)
-        path = get_store_path() / "session.json"
-        path.unlink(missing_ok=True)
-        print(f"Session saved: {session}")
-        update_scene_count(session['sceneId'], session['words'])
-        print(f"Scene count updated for scene {data['scene']}")
-    else:
-        print("Unable to save session to API.")
-
+    save_session(data)
+    path = get_store_path() / "session.json"
+    path.unlink(missing_ok=True)
+    
 # save session (retroactively) command
 def save(args):
     data = {
         "date": args.date,
         "start_time": args.start_time if args.start_time else None,
         "stop_time": args.stop_time if args.stop_time else None,
-        "words": args.words,
+        "words": int(args.words),
         "scene": args.scene,
         "comments": args.comments if args.comments else None
     }
+    save_session(data)
+    
+def save_session(data: dict[str, str | int]):
     session = convert_to_session(data)
     print("Session to save: ", session)
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)
-        print("Session saved")
         update_scene_count(session['sceneId'], session['words'])
         print(f"Scene count updated for scene {data['scene']}")
+    else:
+        print("Unable to save session to API.")
+        sys.exit(1)
 
 # experiment: get session details from Novelwriter session json file for saving to the api/local file
 def novelwrite_session(args):

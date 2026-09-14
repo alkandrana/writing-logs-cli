@@ -1,9 +1,11 @@
-import sys
 import argparse
-from wlogs.library.api.scenes.scene import get_scene_id
-from wlogs.library.api.statuses.list import get_status_id
+import sys
+
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
+from wlogs.library.api.scenes.scene import get_scene_id
+from wlogs.library.api.statuses.list import get_status_id
+
 
 def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:
     return { 
@@ -12,7 +14,7 @@ def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:
             "value": value 
     }
     
-def send_update_request(payload, scene_id):
+def send_update_request(payload: list[dict[str, str | int]], scene_id: int):
     request = {
         "method": "PATCH",
         "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}",
@@ -45,7 +47,7 @@ def update_scene(args: argparse.Namespace):
         payload.append(build_patch("plotline", args.plotline))
     if args.chapter:
         payload.append(build_patch("chapter", args.chapter))
-    send_update_request(payload)
+    send_update_request(payload, scene_id)
 
 def parse_update_scene(scene_subparsers):
     update_parser = scene_subparsers.add_parser("update")
