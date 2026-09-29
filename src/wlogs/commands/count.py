@@ -62,6 +62,10 @@ def get_by_project(sessions, project):
     sessions = [s for s in sessions if s["scene"]["project"]["code"] == project]
     return sessions
 
+def get_by_type(sessions, type):
+    type_filter = type.split(" ")
+    sessions = [s for s in sessions if s['type'] in type_filter]
+    return sessions
 
 def count_sessions(sessions):
     count = 0
@@ -92,6 +96,8 @@ def list_sessions(args):
     if args.today:
         date = datetime.strftime(datetime.today(), "%Y-%m-%d")
         sessions = get_by_date(date, sessions)
+    if args.type:
+        sessions = get_by_type(sessions, args.type)
     if args.count:
         word_count = count_sessions(sessions)
         print(f"\n{word_count:,} words written in all sessions.")
@@ -107,4 +113,5 @@ def parse_count(subparsers):
     count_parser.add_argument("--project", "-p", required=False)
     count_parser.add_argument("--count", "-c", action="store_true", required=False)
     count_parser.add_argument("--wpm", "-w", action="store_true", required=False)
+    count_parser.add_argument("--type", "-tp", )
     count_parser.set_defaults(func=list_sessions)

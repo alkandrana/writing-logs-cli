@@ -13,6 +13,9 @@ def get_scenes_by_code(code: str) -> list[dict[str, Any]]:
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
         return res.json()
+    elif res.status_code == 404:
+        print(f"Could not find a record for scene {code}")
+        sys.exit(0)
     else:
         print(f"Error getting scene {res.status_code} {res.json()}")
         sys.exit(1)
@@ -40,6 +43,9 @@ def get_scene_by_name(name: str):
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
         return res.json()
+    elif res.status_code == 404:
+        print(f"Could not find a record for scene {name}")
+        sys.exit(0)
     else:
         print(f"Error getting scene: {res.status_code} {res.json()} from {request['endpoint']}")
         sys.exit(1)

@@ -29,14 +29,15 @@ def tmp_save(data):
             json.dump(data, f, indent=4)
 
 
-def build_session(words):
+def build_session(args):
     path = get_store_path() / "session.json"
     if path.exists():
         with open(path, "r") as f:
             data = json.load(f)
         if not "stop_time" in data:
             data["stop_time"] = datetime.isoformat(datetime.now().astimezone())
-        data["words"] = words
+        data["words"] = args.words
+        data["type"] = args.type if args.type else "draft"
     else:
         print("No session running.")
         sys.exit(1)
@@ -78,6 +79,7 @@ def convert_to_session(data):
         "stopTime": to_zulu(data["stop_time"]) if data["stop_time"] else data["stop_time"],
         "words": data["words"],
         "sceneId": scene_id,
+        "type": data["type"]
     }
 
 
@@ -90,7 +92,7 @@ def start(args):
 
 
 def stop(args):
-    data = build_session(args.words)
+    data = build_session(args)
     print("Session to save: ", data)
     session = convert_to_session(data)
     status = post_session(session)
@@ -110,6 +112,7 @@ def save(args):
         "stop_time": args.stop_time if args.stop_time else None,
         "words": args.words,
         "scene": args.scene,
+        "type": args.type if args.type else "draft",
         "comments": args.comments if args.comments else None
     }
     session = convert_to_session(data)
@@ -175,6 +178,7 @@ def parse_session(subparsers):
 
     stop_parser = session_subparsers.add_parser("stop")
     stop_parser.add_argument("--words", "-w", help="Words Written")
+    stop_parser.add_argument("--type", "-t", required=False, help="Type of session (draft, rewrite, edit, etc.")
     stop_parser.set_defaults(func=stop)
 
     save_parser = session_subparsers.add_parser("save")
@@ -183,6 +187,7 @@ def parse_session(subparsers):
     save_parser.add_argument("--words", "-w", required=True, help="Words Written")
     save_parser.add_argument("--start_time", "-b", required=False, help="Session Start Time")
     save_parser.add_argument("--stop_time", "-e", required=False, help="Session End Time")
+    save_parser.add_argument("--type", "-t", required=False, help="Type of session (draft, rewrite, edit, etc.")
     save_parser.add_argument("--comments", "-c", required=False, help="Session Comments")
     save_parser.set_defaults(func=save)
 

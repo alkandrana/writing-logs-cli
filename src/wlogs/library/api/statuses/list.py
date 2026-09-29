@@ -11,7 +11,7 @@ def get_status_id(name: str) -> str:
     else:
         request = {
             "method": "GET",
-            "endpoint": f"{load_config()['api_url']}/status/{name}",
+            "endpoint": f"{load_config()['api_url']}/status/name/{name}",
         }
         res = send_auth_request(request)
         if 200 <= res.status_code < 300:
@@ -28,5 +28,5 @@ def get_status_id(name: str) -> str:
                 print("No options found.")
                 sys.exit(1)
         else:
-            print(f"An error occurred: {res.status_code} {res.json()}")
+            print(f"An error occurred fetching status id: {res.status_code} {res.json()}")
             sys.exit(1)
