@@ -45,7 +45,7 @@ def build_session(args):
 
 
 def get_next_id():
-    path = Path(load_config()['log_file'])
+    path = Path(load_config()["log_file"])
     if path.exists():
         with open(path, "r") as f:
             reader = csv.DictReader(f)
@@ -58,9 +58,9 @@ def get_next_id():
 
 
 def save_local(data):
-    path = Path(load_config()['log_file'])
+    path = Path(load_config()["log_file"])
     id = get_next_id()
-    csv_str = f"{id},{data['date']},{data['start_time']},{data['stop_time']},{data['scene']},{data['words']},{data['comments'] if 'comments' in data else ""}\n"
+    csv_str = f"{id},{data['date']},{data['start_time']},{data['stop_time']},{data['scene']},{data['words']},{data['comments'] if 'comments' in data else ''}\n"
     if path.exists():
         with open(path, "a") as f:
             f.write(csv_str)
@@ -75,11 +75,15 @@ def convert_to_session(data):
     scene_id = get_scene_id(data["scene"])
     return {
         "date": data["date"],
-        "startTime": to_zulu(data["start_time"]) if data["start_time"] else data["start_time"],
-        "stopTime": to_zulu(data["stop_time"]) if data["stop_time"] else data["stop_time"],
+        "startTime": to_zulu(data["start_time"])
+        if data["start_time"]
+        else data["start_time"],
+        "stopTime": to_zulu(data["stop_time"])
+        if data["stop_time"]
+        else data["stop_time"],
         "words": data["words"],
         "sceneId": scene_id,
-        "type": data["type"]
+        "type": data["type"],
     }
 
 
@@ -104,6 +108,7 @@ def stop(args):
     else:
         print("Unable to save session to API.")
 
+
 def save(args):
     # scene_id = get_scene_id(args.scene)
     data = {
@@ -113,7 +118,7 @@ def save(args):
         "words": args.words,
         "scene": args.scene,
         "type": args.type if args.type else "draft",
-        "comments": args.comments if args.comments else None
+        "comments": args.comments if args.comments else None,
     }
     session = convert_to_session(data)
     print("Session to save: ", session)
@@ -121,6 +126,7 @@ def save(args):
     if 200 <= res.status_code < 300:
         save_local(data)
         print("Session saved")
+
 
 def novelwrite_session(args):
     project = input("Project Name: ")
@@ -134,8 +140,16 @@ def novelwrite_session(args):
             for line in f:
                 session = line.strip()
         ses_dict = json.loads(session)
-        start = datetime.fromisoformat(ses_dict["start"]).astimezone() if "start" in ses_dict else None
-        stop = datetime.fromisoformat(ses_dict["end"]).astimezone() if "end" in ses_dict else None
+        start = (
+            datetime.fromisoformat(ses_dict["start"]).astimezone()
+            if "start" in ses_dict
+            else None
+        )
+        stop = (
+            datetime.fromisoformat(ses_dict["end"]).astimezone()
+            if "end" in ses_dict
+            else None
+        )
         session = {
             "date": datetime.strftime(start, "%Y-%m-%d"),
             "start_time": to_zulu(start.isoformat()) if start else None,
@@ -143,6 +157,7 @@ def novelwrite_session(args):
             "words": args.words,
             "scene": args.scene,
         }
+
 
 def status(_):
     path = get_store_path() / "session.json"
@@ -178,17 +193,33 @@ def parse_session(subparsers):
 
     stop_parser = session_subparsers.add_parser("stop")
     stop_parser.add_argument("--words", "-w", help="Words Written")
-    stop_parser.add_argument("--type", "-t", required=False, help="Type of session (draft, rewrite, edit, etc.")
+    stop_parser.add_argument(
+        "--type",
+        "-t",
+        required=False,
+        help="Type of session (draft, rewrite, edit, etc.",
+    )
     stop_parser.set_defaults(func=stop)
 
     save_parser = session_subparsers.add_parser("save")
     save_parser.add_argument("--scene", "-s", required=True, help="Scene Code")
     save_parser.add_argument("--date", "-d", required=True, help="Session Date")
     save_parser.add_argument("--words", "-w", required=True, help="Words Written")
-    save_parser.add_argument("--start_time", "-b", required=False, help="Session Start Time")
-    save_parser.add_argument("--stop_time", "-e", required=False, help="Session End Time")
-    save_parser.add_argument("--type", "-t", required=False, help="Type of session (draft, rewrite, edit, etc.")
-    save_parser.add_argument("--comments", "-c", required=False, help="Session Comments")
+    save_parser.add_argument(
+        "--start_time", "-b", required=False, help="Session Start Time"
+    )
+    save_parser.add_argument(
+        "--stop_time", "-e", required=False, help="Session End Time"
+    )
+    save_parser.add_argument(
+        "--type",
+        "-t",
+        required=False,
+        help="Type of session (draft, rewrite, edit, etc.",
+    )
+    save_parser.add_argument(
+        "--comments", "-c", required=False, help="Session Comments"
+    )
     save_parser.set_defaults(func=save)
 
     status_parser = session_subparsers.add_parser("status")

@@ -3,7 +3,9 @@ from typing import Any
 
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
+
 from ..projects.list import get_project_by_code
+
 
 def get_scenes(code) -> dict[str, Any]:
     proj = get_project_by_code(code)
@@ -45,4 +47,3 @@ def parse_scenes_by_project(scene_subparsers):
     scene_project_parser = scene_subparsers.add_parser("project")
     scene_project_parser.add_argument("--code", "-c", required=True)
     scene_project_parser.set_defaults(func=view_scenes_by_project)
-
