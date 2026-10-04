@@ -1,8 +1,9 @@
 import sys
 from wlogs import load_config
 import pandas as pd
-from wlogs.commands import node_url, send_request
+from wlogs.commands import send_request
 from wlogs.library.api.auth import send_auth_request
+
 
 def get_projects():
     request = {
@@ -24,15 +25,23 @@ def get_projects():
 
 def print_projects(projects):
     print(f"Found {len(projects)} projects:\n")
-    project_list: list[dict[str, str | int]] = [{'code': proj['code'], 'title': proj['title'], 'series': proj['series'], 'goal': proj['goal']} for proj in projects]
+    project_list: list[dict[str, str | int]] = [
+        {
+            "code": proj["code"],
+            "title": proj["title"],
+            "series": proj["series"],
+            "goal": proj["goal"],
+        }
+        for proj in projects
+    ]
     dataframe = pd.DataFrame(project_list)
     print(dataframe.from_dict(project_list))
-    #header = ""
-    #for key in projects[0].keys():
+    # header = ""
+    # for key in projects[0].keys():
     #    if "author" not in key or key == "author":
     #        header += f"{key}\t"
-    #print(header)
-    #for rec in projects:
+    # print(header)
+    # for rec in projects:
     #    row = ""
     #    for key, value in rec.items():
     #        if "author" not in key:
@@ -91,7 +100,7 @@ def get_project_code(args):
     project_id = args.id
     request = {
         "method": "GET",
-        "endpoint": f"{node_url}/projects/{project_id}",
+        "endpoint": f"{load_config()['api_url']}/projects/{project_id}",
     }
     code = get_project_by_id(request, send_request)
     print(f"Project {project_id}: {code}")

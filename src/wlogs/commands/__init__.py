@@ -1,11 +1,9 @@
-import sys 
+import sys
 import requests
 
 from wlogs import load_config
 from wlogs.library.api.crud import get_record_id
 
-asp_url = load_config()['api_url']
-node_url = "http://localhost:3000"
 
 def get_project_id(project_code: str) -> str:
     options = get_record_id(project_code, "projects")
@@ -32,6 +30,3 @@ def validate_response(res):
         print(f"Error message: {res.json()}")
     else:
         print(f"Something went wrong. Please try again later.")
-
-
-

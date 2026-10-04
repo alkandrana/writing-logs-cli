@@ -6,6 +6,7 @@
 
 # Mac system files
 **/.DS_Store*
+build/
 
 # Temp files
 src/wlogs/library/scratchpad
