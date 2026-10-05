@@ -28,7 +28,7 @@ def get_status_id(name: str) -> str:
                 print("No options found.")
                 sys.exit(1)
         else:
-            print(f"An error occurred: {res.status_code} {res.json()}")
+            print(f"An error occurred fetching status id: {res.status_code} {res.json()}")
             sys.exit(1)
             
 def get_status_name(status_id: int) -> str:

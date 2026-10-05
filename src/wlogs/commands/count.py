@@ -1,9 +1,14 @@
 import sys
 from datetime import datetime
 
+import pandas as pd
+
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
 from wlogs.library.api.crud import get_record_by_id
+from wlogs.library.dates import to_local
+
+pd.set_option("display.max_rows", 100)
 
 
 def get_all_sessions():
@@ -20,23 +25,38 @@ def print_sessions(sessions):
         choice = input(f"List all {len(sessions)} sessions? (y/n): ")
         if choice.lower() == "n":
             sys.exit(0)
-    for ses in sessions:
-        print(build_session_title(ses) + ":")
-        for key, value in ses.items():
-            if key == "scene" and value and "code" in value:
-                print(f"{key}: {value['code']}")
-
-            elif key == "author" and value and "userName" in value:
-                print(f"{key}: {value['userName']}")
-            elif "time" in key.lower() and value:
-                value = datetime.fromisoformat(value)
-                value = value.astimezone()
-                print(f"{key}: {datetime.strftime(value, '%Y-%m-%d %H:%M:%S')}")
-            elif (key == "duration" or key == "wpm") and value:
-                print(f"{key}: {round(value)}")
-            elif "id" not in key.lower():
-                print(f"{key}: {value}")
-        print("\n")
+    sessions = [
+        {
+            "date": ses["date"],
+            "start": to_local(ses["startTime"]) if ses["startTime"] else "",
+            "stop": to_local(ses["stopTime"]) if ses["stopTime"] else "",
+            "words": ses["words"],
+            "scene": ses["scene"]["code"],
+            "duration": round(ses["duration"]) if ses["duration"] else "",
+            "wpm": round(ses["wpm"]) if ses["wpm"] else "",
+            "type": ses["type"],
+        }
+        for ses in sessions
+    ]
+    dataframe = pd.DataFrame(sessions)
+    print(dataframe)
+    # for ses in sessions:
+    #     print(build_session_title(ses) + ":")
+    #     for key, value in ses.items():
+    #         if key == "scene" and value and "code" in value:
+    #             print(f"{key}: {value['code']}")
+    #
+    #         elif key == "author" and value and "userName" in value:
+    #             print(f"{key}: {value['userName']}")
+    #         elif "time" in key.lower() and value:
+    #             value = datetime.fromisoformat(value)
+    #             value = value.astimezone()
+    #             print(f"{key}: {datetime.strftime(value, '%Y-%m-%d %H:%M:%S')}")
+    #         elif (key == "duration" or key == "wpm") and value:
+    #             print(f"{key}: {round(value)}")
+    #         elif "id" not in key.lower():
+    #             print(f"{key}: {value}")
+    #     print("\n")
 
 
 def build_session_title(session):
@@ -60,6 +80,12 @@ def get_by_scene(sessions, scene):
 
 def get_by_project(sessions, project):
     sessions = [s for s in sessions if s["scene"]["project"]["code"] == project]
+    return sessions
+
+
+def get_by_type(sessions, type):
+    type_filter = type.split(" ")
+    sessions = [s for s in sessions if s["type"] in type_filter]
     return sessions
 
 
@@ -92,6 +118,8 @@ def list_sessions(args):
     if args.today:
         date = datetime.strftime(datetime.today(), "%Y-%m-%d")
         sessions = get_by_date(date, sessions)
+    if args.type:
+        sessions = get_by_type(sessions, args.type)
     if args.count:
         word_count = count_sessions(sessions)
         print(f"\n{word_count:,} words written in all sessions.")
@@ -107,4 +135,8 @@ def parse_count(subparsers):
     count_parser.add_argument("--project", "-p", required=False)
     count_parser.add_argument("--count", "-c", action="store_true", required=False)
     count_parser.add_argument("--wpm", "-w", action="store_true", required=False)
+    count_parser.add_argument(
+        "--type",
+        "-tp",
+    )
     count_parser.set_defaults(func=list_sessions)

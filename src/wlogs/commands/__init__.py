@@ -5,10 +5,12 @@ from wlogs import load_config
 from wlogs.library.api.crud import get_record_id
 
 
-def get_project_id(project_code: str) -> str:
+
+def get_project_id(project_code: str) -> int | None:
     options = get_record_id(project_code, "projects")
-    project = options[0]
-    return project["id"]
+    if options:
+        project = options[0]
+        return project["id"]
 
 
 def send_request(request):
