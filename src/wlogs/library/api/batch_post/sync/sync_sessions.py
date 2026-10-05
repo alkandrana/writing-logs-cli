@@ -1,12 +1,14 @@
-import sys
-import csv
 import argparse
+import csv
+import sys
 from pathlib import Path
 
 from wlogs import load_config
-from ...scenes.scene import get_scene_id
 from wlogs.library.api.crud import post_record
-from wlogs.library.dates import to_zulu, join_date
+from wlogs.library.dates import join_date, to_zulu
+
+from ...scenes.scene import get_scene_id
+
 
 # 1. get sessions from log
 def get_records_from_csv(path: str):
@@ -19,6 +21,7 @@ def get_records_from_csv(path: str):
     else:
         print("Could not find file.")
         sys.exit(1)
+
 
 # 2. format sessions, accounting for variations in data
 def format_local_session(ses: dict[str, str | int | None]):
@@ -35,16 +38,17 @@ def format_local_session(ses: dict[str, str | int | None]):
     }
     return session
 
+
 def batch_sessions(_: argparse.Namespace):
     print("Getting sessions from file...")
-    sessions = get_records_from_csv(load_config()['log_file'])
+    sessions = get_records_from_csv(load_config()["log_file"])
     print("Converting sessions to payload...")
     batch = [format_local_session(s) for s in sessions]
     print("Posting sessions to API...")
     for p in batch:
         post_record(p, "sessions")
 
+
 def parse_batch_sessions(sync_subparsers):
     session_parser = sync_subparsers.add_parser("sessions")
     session_parser.set_defaults(func=batch_sessions)
-
