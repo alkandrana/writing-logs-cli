@@ -27,6 +27,7 @@ def initialize(scene):
         sys.exit(1)
     return session_data
 
+
 # save start data to temp file
 def tmp_save(data):
     path = get_store_path() / "session.json"
@@ -36,6 +37,7 @@ def tmp_save(data):
     else:
         with open(path, "w") as f:
             json.dump(data, f, indent=4)
+
 
 # construct final session dict (after session completion)
 def build_session(args):
@@ -52,6 +54,7 @@ def build_session(args):
         sys.exit(1)
     return data
 
+
 # calculate new id for session for local file
 def get_next_id():
     path = Path(load_config()["log_file"])
@@ -66,9 +69,10 @@ def get_next_id():
         print("Log file not found.")
         sys.exit(1)
 
+
 # save constructed session to local file
 def save_local(data):
-    path = Path(load_config()['log_file'])
+    path = Path(load_config()["log_file"])
     session_id = get_next_id()
     csv_str = f"{session_id},{data['date']},{data.get('start_time', '')},{data.get('stop_time', '')},{data['scene']},{data['words']},{data.get('comments', '')}\n"
     if path.exists():
@@ -79,14 +83,15 @@ def save_local(data):
         print("Log file not found.")
         sys.exit(1)
 
+
 # format constructed session as payload to send to API
 def convert_to_session(data):
     print(f"Local session: {data}")
     scene_id = get_scene_id(data["scene"])
     # update scene status if scene hadn't been started yet
     scene = get_scene_by_id(scene_id)
-    if get_status_name(int(scene['statusId'])).lower() == "pending":
-        status_update = build_patch("statusId", get_status_id('writing'))
+    if get_status_name(int(scene["statusId"])).lower() == "pending":
+        status_update = build_patch("statusId", get_status_id("writing"))
         send_update_request([status_update], scene_id)
     return {
         "date": data["date"],
@@ -101,10 +106,11 @@ def convert_to_session(data):
         "type": data["type"],
     }
 
+
 # send request to update scene word count to reflect session word count
 def update_scene_count(scene_id: int, words: int):
     scene = get_scene_by_id(scene_id)
-    words += int(scene['words'])
+    words += int(scene["words"])
     payload = [build_patch("words", words)]
     send_update_request(payload, scene_id)
 
@@ -117,13 +123,24 @@ def start(args):
     for key, value in data.items():
         print(f"{key}: {value}")
 
+
 # stop session command
 def stop(args):
     data = build_session(args)
     print("Session to save: ", data)
     save_session(data)
+    if args.end_scene:
+        end_scene(data["scene"])
     path = get_store_path() / "session.json"
     path.unlink(missing_ok=True)
+
+
+def end_scene(scene_code):
+    scene_id = get_scene_id(scene_code)
+    status_id = get_status_id("finished")
+    status_update = [build_patch("statusId", status_id)]
+    send_update_request(status_update, scene_id)
+
 
 # save session (retroactively) command
 def save(args):
@@ -138,17 +155,19 @@ def save(args):
     }
     save_session(data)
 
+
 def save_session(data: dict[str, str | int]):
     session = convert_to_session(data)
     print("Session to save: ", session)
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)
-        update_scene_count(session['sceneId'], session['words'])
+        update_scene_count(session["sceneId"], session["words"])
         print(f"Scene count updated for scene {data['scene']}")
     else:
         print("Unable to save session to API.")
         sys.exit(1)
+
 
 # experiment: get session details from Novelwriter session json file for saving to the api/local file
 def novelwrite_session(args):
@@ -168,15 +187,26 @@ def novelwrite_session(args):
         else:
             print("Error: No sessions found in file.")
             sys.exit(1)
-        start = datetime.fromisoformat(ses_dict["start"]).astimezone() if "start" in ses_dict else None
-        stop = datetime.fromisoformat(ses_dict["end"]).astimezone() if "end" in ses_dict else None
+        start = (
+            datetime.fromisoformat(ses_dict["start"]).astimezone()
+            if "start" in ses_dict
+            else None
+        )
+        stop = (
+            datetime.fromisoformat(ses_dict["end"]).astimezone()
+            if "end" in ses_dict
+            else None
+        )
         session = {
-            "date": datetime.strftime(start, "%Y-%m-%d") if start else datetime.now().astimezone().date().isoformat(),
+            "date": datetime.strftime(start, "%Y-%m-%d")
+            if start
+            else datetime.now().astimezone().date().isoformat(),
             "start_time": to_zulu(start.isoformat()) if start else None,
             "stop_time": to_zulu(stop.isoformat()) if stop else None,
             "words": args.words,
             "scene": args.scene,
         }
+
 
 # check details for current session (command)
 def status(_):
@@ -188,6 +218,7 @@ def status(_):
             data = json.load(f)
         print(f"Current session: {data}")
         print_dict(data)
+
 
 # cancel current session (command)
 def cancel(_):
@@ -213,7 +244,13 @@ def parse_session(subparsers):
 
     stop_parser = session_subparsers.add_parser("stop")
     stop_parser.add_argument("--words", "-w", help="Words Written")
-    stop_parser.add_argument("--end_scene", "-es", required=False, help="Change scene status to finished.")
+    stop_parser.add_argument(
+        "--end_scene",
+        "-es",
+        required=False,
+        action="store_true",
+        help="Change scene status to finished.",
+    )
 
     stop_parser.add_argument(
         "--type",

@@ -8,27 +8,25 @@ from wlogs.library.api.statuses.list import get_status_id
 
 
 def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:
-    return { 
-            "op": "replace", 
-            "path": f"/{property_name}", 
-            "value": value 
-    }
-    
+    return {"op": "replace", "path": f"/{property_name}", "value": value}
+
+
 def send_update_request(payload: list[dict[str, str | int]], scene_id: int):
     request = {
         "method": "PATCH",
         "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}",
-        "payload": payload
+        "payload": payload,
     }
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
-        print("Scene updated successfully")
+        print(f"Scene {payload[0]['path']} updated successfully")
     elif res.status_code == 404:
         print("Scene not found.")
         sys.exit(1)
     else:
         print("An error occurred: ", res.status_code, res.reason, res.json())
         sys.exit(1)
+
 
 def update_scene(args: argparse.Namespace):
     scene_id = get_scene_id(args.code)
@@ -49,13 +47,40 @@ def update_scene(args: argparse.Namespace):
         payload.append(build_patch("chapter", args.chapter))
     send_update_request(payload, scene_id)
 
+
 def parse_update_scene(scene_subparsers):
     update_parser = scene_subparsers.add_parser("update")
-    update_parser.add_argument("--code", "-c", type=str, required=True, help="Scene Code")
-    update_parser.add_argument("--name", "-n", type=str, required=False, help="Update scene name")
-    update_parser.add_argument("--sequence", "-s", type=int, required=False, help="Update scene number")
-    update_parser.add_argument("--words", "-w", type=int, required=False, help="Update scene word count.")
-    update_parser.add_argument("--status", "-st", type=str, required=False, help="Update scene status (pending, writing, finished, or aborted.")
-    update_parser.add_argument("--plotline", "-p", type=str, required=False, help="Update scene's plotline (name of character whose story the scene contributes to)")
-    update_parser.add_argument("--chapter", "-ch", type=str, required=False, help="Update scene's chapter name.")
+    update_parser.add_argument(
+        "--code", "-c", type=str, required=True, help="Scene Code"
+    )
+    update_parser.add_argument(
+        "--name", "-n", type=str, required=False, help="Update scene name"
+    )
+    update_parser.add_argument(
+        "--sequence", "-s", type=int, required=False, help="Update scene number"
+    )
+    update_parser.add_argument(
+        "--words", "-w", type=int, required=False, help="Update scene word count."
+    )
+    update_parser.add_argument(
+        "--status",
+        "-st",
+        type=str,
+        required=False,
+        help="Update scene status (pending, writing, finished, or aborted.",
+    )
+    update_parser.add_argument(
+        "--plotline",
+        "-p",
+        type=str,
+        required=False,
+        help="Update scene's plotline (name of character whose story the scene contributes to)",
+    )
+    update_parser.add_argument(
+        "--chapter",
+        "-ch",
+        type=str,
+        required=False,
+        help="Update scene's chapter name.",
+    )
     update_parser.set_defaults(func=update_scene)
