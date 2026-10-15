@@ -162,7 +162,7 @@ def save_session(data: dict[str, str | int]):
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)
-        update_scene_count(session["sceneId"], session["words"])
+        update_scene_count(int(session["sceneId"]), int(session["words"]))
         print(f"Scene count updated for scene {data['scene']}")
     else:
         print("Unable to save session to API.")
