@@ -63,8 +63,14 @@ def get_next_id():
         with open(path, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                session_id = int(row["session_id"])
-        return session_id + 1
+                session_id = row["session_id"]
+        if "-" in session_id:
+            parts = session_id.split("-")
+            parts[1] = f"{(int(parts[1]) + 1):03d}"
+            session_id = "-".join(parts)
+        else:
+            session_id = int(session_id) + 1
+        return session_id
     else:
         print("Log file not found.")
         sys.exit(1)
