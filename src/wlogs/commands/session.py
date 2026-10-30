@@ -80,10 +80,13 @@ def get_next_id():
 def save_local(data):
     path = Path(load_config()["log_file"])
     session_id = get_next_id()
-    csv_str = f"{session_id},{data['date']},{data.get('start_time', '')},{data.get('stop_time', '')},{data['scene']},{data['words']},{data.get('comments', '')}\n"
+    data["id"] = session_id
+    header = list(data.keys())
+    # csv_str = f"{session_id},{data['date']},{data.get('start_time', '')},{data.get('stop_time', '')},{data['scene']},{data['words']},{data.get('comments', '')}\n"
     if path.exists():
-        with open(path, "a") as f:
-            f.write(csv_str)
+        with open(path, "a", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=header)
+            writer.writerow(data)
         print(f"Session saved to {path}")
     else:
         print("Log file not found.")
