@@ -59,11 +59,11 @@ def build_session(args):
 def get_next_id():
     path = Path(load_config()["log_file"])
     if path.exists():
-        session_id = 0
+        session_id = "0"
         with open(path, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                session_id = row["session_id"]
+                session_id = row["id"]
         if "-" in session_id:
             parts = session_id.split("-")
             parts[1] = f"{(int(parts[1]) + 1):03d}"
