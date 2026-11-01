@@ -102,7 +102,7 @@ def get_project_code(args):
         "method": "GET",
         "endpoint": f"{load_config()['api_url']}/projects/{project_id}",
     }
-    code = get_project_by_id(request, send_request)
+    code = get_project_by_id(request)
     print(f"Project {project_id}: {code}")
 
 

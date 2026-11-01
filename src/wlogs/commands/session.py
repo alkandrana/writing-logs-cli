@@ -81,7 +81,8 @@ def save_local(data):
     path = Path(load_config()["log_file"])
     session_id = get_next_id()
     data["id"] = session_id
-    header = list(data.keys())
+    print(f"Local session: {data}")
+    header = ["id", "date", "words", "start", "stop", "scene", "type", "comments"]
     # csv_str = f"{session_id},{data['date']},{data.get('start_time', '')},{data.get('stop_time', '')},{data['scene']},{data['words']},{data.get('comments', '')}\n"
     if path.exists():
         with open(path, "a", encoding="utf-8") as f:
@@ -89,13 +90,12 @@ def save_local(data):
             writer.writerow(data)
         print(f"Session saved to {path}")
     else:
-        print("Log file not found.")
+        print("Log file not found. Run 'wlogs config log' to update the log file path in the config file.")
         sys.exit(1)
 
 
 # format constructed session as payload to send to API
 def convert_to_session(data):
-    print(f"Local session: {data}")
     scene_id = get_scene_id(data["scene"])
     # update scene status if scene hadn't been started yet
     scene = get_scene_by_id(scene_id)
