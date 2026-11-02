@@ -82,7 +82,16 @@ def save_local(data):
     session_id = get_next_id()
     data["id"] = session_id
     print(f"Local session: {data}")
-    header = ["id", "date", "words", "start", "stop", "scene", "type", "comments"]
+    header = [
+        "id",
+        "date",
+        "words",
+        "start_time",
+        "stop_time",
+        "scene",
+        "type",
+        "comments",
+    ]
     # csv_str = f"{session_id},{data['date']},{data.get('start_time', '')},{data.get('stop_time', '')},{data['scene']},{data['words']},{data.get('comments', '')}\n"
     if path.exists():
         with open(path, "a", encoding="utf-8") as f:
@@ -90,7 +99,9 @@ def save_local(data):
             writer.writerow(data)
         print(f"Session saved to {path}")
     else:
-        print("Log file not found. Run 'wlogs config log' to update the log file path in the config file.")
+        print(
+            "Log file not found. Run 'wlogs config log' to update the log file path in the config file."
+        )
         sys.exit(1)
 
 
@@ -117,9 +128,10 @@ def convert_to_session(data):
 
 
 # send request to update scene word count to reflect session word count
-def update_scene_count(scene_id: int, words: int):
+def update_scene_count(scene_id: int, words: int, type: str):
     scene = get_scene_by_id(scene_id)
-    words += int(scene["words"])
+    if type == "draft":
+        words += int(scene["words"])
     payload = [build_patch("words", words)]
     send_update_request(payload, scene_id)
 
@@ -171,7 +183,7 @@ def save_session(data: dict[str, str | int]):
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)
-        update_scene_count(int(session["sceneId"]), int(session["words"]))
+        update_scene_count(int(session["sceneId"]), int(session["words"]), data["type"])
         print(f"Scene count updated for scene {data['scene']}")
     else:
         print("Unable to save session to API.")
