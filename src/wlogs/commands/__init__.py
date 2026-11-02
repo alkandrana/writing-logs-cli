@@ -4,8 +4,6 @@ import requests
 from wlogs import load_config
 from wlogs.library.api.crud import get_record_id
 
-asp_url = load_config()["api_url"]
-node_url = "http://localhost:3000"
 
 
 def get_project_id(project_code: str) -> int | None:
