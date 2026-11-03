@@ -79,8 +79,6 @@ def get_next_id():
 # save constructed session to local file
 def save_local(data):
     path = Path(load_config()["log_file"])
-    session_id = get_next_id()
-    data["id"] = session_id
     print(f"Local session: {data}")
     header = [
         "id",
@@ -180,6 +178,9 @@ def save(args):
 def save_session(data: dict[str, str | int]):
     session = convert_to_session(data)
     print("Session to save: ", session)
+    session_id = get_next_id()
+    session["code"] = session_id
+    data["id"] = session_id
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)

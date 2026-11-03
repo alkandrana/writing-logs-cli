@@ -21,12 +21,13 @@ def get_all_sessions():
 
 def print_sessions(sessions):
     print(f"\n{len(sessions)} sessions match the criteria:\n")
-    if len(sessions) > 5:
+    if len(sessions) > 50:
         choice = input(f"List all {len(sessions)} sessions? (y/n): ")
         if choice.lower() == "n":
             sys.exit(0)
     sessions = [
         {
+            "code": ses["code"] if ses.get("code") else "",
             "date": ses["date"],
             "start": to_local(ses["startTime"]) if ses["startTime"] else "",
             "stop": to_local(ses["stopTime"]) if ses["stopTime"] else "",
