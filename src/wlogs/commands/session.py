@@ -14,12 +14,14 @@ from wlogs.library.file.search import find_file
 
 
 # Construct dict of starting session data
-def initialize(scene):
+def convert_session_to_json(args):
     session_data = {
         "date": datetime.now().astimezone().date().isoformat(),
         "start_time": datetime.isoformat(datetime.now().astimezone()),
-        "scene": scene,
+        "scene": args.scene,
     }
+    if args.start_words:
+        session_data["start_words"] = int(args.start_words)
     try:
         json.dumps(session_data)
     except TypeError:
@@ -47,8 +49,12 @@ def build_session(args):
             data = json.load(f)
         if not "stop_time" in data:
             data["stop_time"] = datetime.isoformat(datetime.now().astimezone())
-        data["words"] = args.words
+        if "start_words" in data:
+            data["words"] = int(args.words) - int(data["start_words"])
+        else:
+            data["words"] = int(args.words)
         data["type"] = args.type if args.type else "draft"
+        data["comments"] = args.comments if args.comments else ""
     else:
         print("No session running.")
         sys.exit(1)
@@ -80,6 +86,15 @@ def get_next_id():
 def save_local(data):
     path = Path(load_config()["log_file"])
     print(f"Local session: {data}")
+    local_session = {
+        "id": data["id"],
+        "date": data["date"],
+        "words": data["words"],
+        "start_time": data.get("start_time", ""),
+        "stop_time": data.get("stop_time", ""),
+        "scene": data["scene"],
+        "type": data["type"],
+        "comments": data.get("comments", ""),}
     header = [
         "id",
         "date",
@@ -90,11 +105,10 @@ def save_local(data):
         "type",
         "comments",
     ]
-    # csv_str = f"{session_id},{data['date']},{data.get('start_time', '')},{data.get('stop_time', '')},{data['scene']},{data['words']},{data.get('comments', '')}\n"
     if path.exists():
         with open(path, "a", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=header)
-            writer.writerow(data)
+            writer.writerow(local_session)
         print(f"Session saved to {path}")
     else:
         print(
@@ -128,7 +142,7 @@ def convert_to_session(data):
 # send request to update scene word count to reflect session word count
 def update_scene_count(scene_id: int, words: int, type: str):
     scene = get_scene_by_id(scene_id)
-    if type == "draft":
+    if "draft" in type.lower():
         words += int(scene["words"])
     payload = [build_patch("words", words)]
     send_update_request(payload, scene_id)
@@ -136,7 +150,7 @@ def update_scene_count(scene_id: int, words: int, type: str):
 
 # start session command
 def start(args):
-    data = initialize(args.scene)
+    data = convert_session_to_json(args)
     tmp_save(data)
     print("Session started: ")
     for key, value in data.items():
@@ -146,7 +160,6 @@ def start(args):
 # stop session command
 def stop(args):
     data = build_session(args)
-    print("Session to save: ", data)
     save_session(data)
     if args.end_scene:
         end_scene(data["scene"])
@@ -177,10 +190,10 @@ def save(args):
 
 def save_session(data: dict[str, str | int]):
     session = convert_to_session(data)
-    print("Session to save: ", session)
     session_id = get_next_id()
     session["code"] = session_id
     data["id"] = session_id
+    print(f"Session to save: {data}")
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)
@@ -191,43 +204,43 @@ def save_session(data: dict[str, str | int]):
         sys.exit(1)
 
 
-# experiment: get session details from Novelwriter session json file for saving to the api/local file
-def novelwrite_session(args):
-    project = input("Project Name: ")
-    path = find_file(project, full_name=True)
-    if not path or not path.exists():
-        print("Project folder could not be located. Check spelling and try again.")
-        sys.exit(1)
-    else:
-        session_json = path / "meta" / "sessions.jsonl"
-        session = ""
-        with open(session_json, "r") as f:
-            for line in f:
-                session = line.strip()
-        if session:
-            ses_dict = json.loads(session)
-        else:
-            print("Error: No sessions found in file.")
-            sys.exit(1)
-        start = (
-            datetime.fromisoformat(ses_dict["start"]).astimezone()
-            if "start" in ses_dict
-            else None
-        )
-        stop = (
-            datetime.fromisoformat(ses_dict["end"]).astimezone()
-            if "end" in ses_dict
-            else None
-        )
-        session = {
-            "date": datetime.strftime(start, "%Y-%m-%d")
-            if start
-            else datetime.now().astimezone().date().isoformat(),
-            "start_time": to_zulu(start.isoformat()) if start else None,
-            "stop_time": to_zulu(stop.isoformat()) if stop else None,
-            "words": args.words,
-            "scene": args.scene,
-        }
+# # experiment: get session details from Novelwriter session json file for saving to the api/local file
+# def novelwrite_session(args):
+#     project = input("Project Name: ")
+#     path = find_file(project, full_name=True)
+#     if not path or not path.exists():
+#         print("Project folder could not be located. Check spelling and try again.")
+#         sys.exit(1)
+#     else:
+#         session_json = path / "meta" / "sessions.jsonl"
+#         session = ""
+#         with open(session_json, "r") as f:
+#             for line in f:
+#                 session = line.strip()
+#         if session:
+#             ses_dict = json.loads(session)
+#         else:
+#             print("Error: No sessions found in file.")
+#             sys.exit(1)
+#         start = (
+#             datetime.fromisoformat(ses_dict["start"]).astimezone()
+#             if "start" in ses_dict
+#             else None
+#         )
+#         stop = (
+#             datetime.fromisoformat(ses_dict["end"]).astimezone()
+#             if "end" in ses_dict
+#             else None
+#         )
+#         session = {
+#             "date": datetime.strftime(start, "%Y-%m-%d")
+#             if start
+#             else datetime.now().astimezone().date().isoformat(),
+#             "start_time": to_zulu(start.isoformat()) if start else None,
+#             "stop_time": to_zulu(stop.isoformat()) if stop else None,
+#             "words": args.words,
+#             "scene": args.scene,
+#         }
 
 
 # check details for current session (command)
@@ -262,6 +275,7 @@ def parse_session(subparsers):
 
     start_parser = session_subparsers.add_parser("start")
     start_parser.add_argument("--scene", "-s", help="Scene Code")
+    start_parser.add_argument("--start_words", "-w", help="Words Written at Start of Session")
     start_parser.set_defaults(func=start)
 
     stop_parser = session_subparsers.add_parser("stop")
@@ -278,8 +292,10 @@ def parse_session(subparsers):
         "--type",
         "-t",
         required=False,
-        help="Type of session (draft, rewrite, edit, etc.",
+        help="Type of session (draft, rewrite, edit, etc.)",
     )
+    stop_parser.add_argument(
+        "--comments", "-c", required=False, help="Add a note about the session (optional)")
     stop_parser.set_defaults(func=stop)
 
     save_parser = session_subparsers.add_parser("save")
@@ -296,7 +312,7 @@ def parse_session(subparsers):
         "--type",
         "-t",
         required=False,
-        help="Type of session (draft, rewrite, edit, etc.",
+        help="Type of session (draft, rewrite, edit, etc.)",
     )
     save_parser.add_argument(
         "--comments", "-c", required=False, help="Session Comments"
