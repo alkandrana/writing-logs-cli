@@ -1,4 +1,4 @@
-import sys 
+import sys
 
 import keyring as kr
 import maskpass
@@ -29,12 +29,14 @@ def check_server_health(url):
 
 
 def send_auth_request(request: dict[str, Any]):
+    print("Initializing authentication...")
     access_token = get_access_token()
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
     request["headers"] = headers
+    print(f"Sending request to {request['endpoint']}...")
     res = validate_response(request)
     return res
 
@@ -44,6 +46,7 @@ def get_refresh_token():
     if refresh_token:
         refresh(refresh_token)
     else:
+        print("No refresh token stored. Redirecting to login...")
         login()
 
 
@@ -52,6 +55,7 @@ def get_access_token():
     if access_token:
         return access_token
     else:
+        print("No access token stored. Attempting refresh...")
         get_refresh_token()
         return kr.get_password("wlogs", "access_token")
 
@@ -72,7 +76,9 @@ def validate_response(request):
         return response
     # if access token expired
     elif response.status_code == 401:
+        print("Access token expired. Refreshing...")
         get_refresh_token()
+        print(f"Resending request to {request['endpoint']}...")
         response = send_request(request)
         if 200 <= response.status_code < 300 or 400 <= response.status_code < 500:
             return response
