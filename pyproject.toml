@@ -16,7 +16,8 @@ dependencies = [
     "requests==2.34.2",
     "urllib3==2.7.0",
     "pyyaml===6.0.3",
-    "maskpass==0.3.7"
+    "maskpass==0.3.7",
+    "pandas==3.0.5"
 ]
 
 [project.scripts]
