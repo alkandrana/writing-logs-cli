@@ -5,13 +5,13 @@ from wlogs.library.api.auth import send_auth_request
 
 
 def get_status_id(name: str) -> str:
-    if name not in ["pending", "writing", "finished", "aborted"]:
+    if name.lower() not in ["pending", "writing", "finished", "aborted"]:
         print("Invalid status name.")
         sys.exit(1)
     else:
         request = {
             "method": "GET",
-            "endpoint": f"{load_config()['api_url']}/status/{name}",
+            "endpoint": f"{load_config()['api_url']}/status/name/{name.capitalize()}",
         }
         res = send_auth_request(request)
         if 200 <= res.status_code < 300:
@@ -28,5 +28,7 @@ def get_status_id(name: str) -> str:
                 print("No options found.")
                 sys.exit(1)
         else:
-            print(f"An error occurred: {res.status_code} {res.json()}")
+            print(
+                f"An error occurred sending request to {request['endpoint']}: {res.status_code} {res.json()}"
+            )
             sys.exit(1)
