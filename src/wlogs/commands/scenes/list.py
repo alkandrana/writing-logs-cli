@@ -62,10 +62,10 @@ def print_scene(scenelist):
             "code": sc["code"],
             "sequence": sc["sequence"],
             "name": sc["name"],
-            "chapter": sc["chapter"],
+            "chapter": sc["chapter"] if sc["chapter"] else "",
             "words": sc["words"],
-            "status": sc["status"],
-            "plotline": sc["plotline"],
+            "status": sc["status"]["name"] if sc["status"] else "",
+            "plotline": sc["plotline"] if sc["plotline"] else "",
             "project": sc["project"]["title"] if sc["project"] else "",
         }
         for sc in scenelist

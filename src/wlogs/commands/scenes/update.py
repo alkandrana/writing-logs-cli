@@ -27,7 +27,6 @@ def send_update_request(request):
 def update_scene(args: argparse.Namespace):
     scene_id = get_scene_id(args.code)
     print(f"ID for scene with code {args.code}: {scene_id}")
-    print(f"Checking argument transmission: {args}")
     payload = []
     if args.words != None:
         payload.append(build_patch("words", args.words))
@@ -48,7 +47,6 @@ def update_scene(args: argparse.Namespace):
         "endpoint": f"{load_config()['api_url']}/scenes/{scene_id}",
         "payload": payload,
     }
-    print(f"Payload prepared: {request}")
     c = input("Proceed? (y/n): ")
     if c.lower() == "y":
         send_update_request(request)

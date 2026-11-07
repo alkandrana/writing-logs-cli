@@ -7,7 +7,7 @@ from wlogs.library.api.auth import send_auth_request
 from ..projects.list import get_project_by_code
 
 
-def get_scenes_by_project(code) -> dict[str, Any]:
+def get_scenes_by_project(code) -> list[dict[str, Any]]:
     proj = get_project_by_code(code)
     project_id = proj["id"]
     request = {

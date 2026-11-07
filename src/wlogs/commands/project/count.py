@@ -3,7 +3,6 @@ from wlogs.library.api.scenes.scenes_by_project import get_scenes_by_project
 
 def get_project_words(code):
     scenes = get_scenes_by_project(code)
-    # scenes = proj["scenelist"]
     total_words = sum(scene.get("words", 0) for scene in scenes)
     return total_words
 
