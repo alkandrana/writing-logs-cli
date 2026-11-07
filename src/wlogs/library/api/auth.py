@@ -187,7 +187,6 @@ def register(_):
     password = maskpass.askpass()
     payload = {"email": username, "password": password}
     url = f"{load_config()['api_url']}/register"
-    print("API url: ", url, payload)
     res = requests.post(url, json=payload)
     if 200 <= res.status_code < 300:
         print("Successfully registered.")
