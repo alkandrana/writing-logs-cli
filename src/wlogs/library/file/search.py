@@ -10,17 +10,19 @@ def fast_search(
         ) -> Generator[Path]:
     # os.scandir returns an iterator that points directly to system memory
     for entry in os.scandir(target_dir):
-        if not entry.name.startswith(".") and not entry.name in ["Library", "Downloads"]:
+        if not entry.name.startswith(".") and not entry.name in ["Library", "Downloads", "AppData"]:
             condition = (
                 target_filename.lower() == entry.name.lower()
                 if full_name
                 else target_filename.lower() in entry.name.lower()
             )
             if condition:
+                print(f"Found file: {entry.path}")
                 yield Path(entry.path)
             if entry.is_dir(follow_symlinks=False):
                 # Recurse into subdirectories
                 try:
+                    # print(f"Searching subdirectory: {entry.path}")
                     yield from fast_search(
                         target_filename, target_dir=entry.path, full_name=full_name
                     )
