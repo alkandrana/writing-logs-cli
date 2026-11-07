@@ -7,7 +7,7 @@ from wlogs.library.api.auth import send_auth_request
 from ..projects.list import get_project_by_code
 
 
-def get_scenes(code) -> dict[str, Any]:
+def get_scenes_by_project(code) -> dict[str, Any]:
     proj = get_project_by_code(code)
     project_id = proj["id"]
     request = {
@@ -18,7 +18,7 @@ def get_scenes(code) -> dict[str, Any]:
     if 200 <= res.status_code < 300:
         scenes = res.json()
         scenes.sort(key=lambda sc: sc["sequence"])
-        return {"project": proj["title"], "scenelist": scenes}
+        return scenes
     else:
         print(f"\n{res.status_code}: {res.json()}")
         sys.exit(1)
@@ -38,7 +38,7 @@ def print_scenes(project):
 
 
 def view_scenes_by_project(args):
-    proj = get_scenes(args.code)
+    proj = get_scenes_by_project(args.code)
     print_scenes(proj)
 
 

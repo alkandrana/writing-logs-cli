@@ -1,8 +1,11 @@
 import sys
 from typing import Any
 
+import pandas as pd
+
 from wlogs import load_config
 from wlogs.library.api.auth import send_auth_request
+from wlogs.library.api.scenes.scenes_by_project import get_scenes_by_project
 
 
 def get_scenes_by_code(code: str) -> list[dict[str, Any]]:
@@ -54,20 +57,21 @@ def get_scene_by_name(name: str):
 
 
 def print_scene(scenelist):
-    if len(scenelist) > 1:
-        print("Multiple scenes match that scene code. Make a selection: ")
-        for i, sc in enumerate(scenelist):
-            print(f"{i}: {sc['name']}, {sc['project']['code']}, {sc['plotline']}")
-        choice = input("Select the appropriate number: ")
-        scene = scenelist[int(choice)]
-    else:
-        scene = scenelist[0]
-    print(f"Scene {scene['code']}: {scene['name']}\n")
-    for key, value in scene.items():
-        if not key == "project":
-            print(f"{key}: {value}")
-        elif key == "project" and value:
-            print(f"project title: {value['title']}")
+    scenelist = [
+        {
+            "code": sc["code"],
+            "sequence": sc["sequence"],
+            "name": sc["name"],
+            "chapter": sc["chapter"],
+            "words": sc["words"],
+            "status": sc["status"],
+            "plotline": sc["plotline"],
+            "project": sc["project"]["title"] if sc["project"] else "",
+        }
+        for sc in scenelist
+    ]
+    df = pd.DataFrame(scenelist)
+    print(df)
 
 
 def get_scene_id(code: str) -> int:
@@ -84,18 +88,24 @@ def get_scene_id(code: str) -> int:
 
 def view_one_scene(args):
     if args.code:
+        criterion = f"code {args.code}"
         scenes = get_scenes_by_code(args.code)
     elif args.name:
+        criterion = f"name {args.name}"
         scenes = get_scene_by_name(args.name)
+    elif args.project:
+        criterion = f"project {args.project}"
+        scenes = get_scenes_by_project(args.project)
     else:
         print("No search key submitted.")
         sys.exit(1)
+    print(f"\n{len(scenes)} scenes match {criterion}:\n")
     print_scene(scenes)
 
 
 def parse_list_scenes(scene_subparsers):
     list_parser = scene_subparsers.add_parser("list")
     list_parser.add_argument("--code", "-c", required=False)
-    # list_parser.add_argument("--project", "-p", required=False)
+    list_parser.add_argument("--project", "-p", required=False)
     list_parser.add_argument("--name", "-n", required=False)
     list_parser.set_defaults(func=view_one_scene)
