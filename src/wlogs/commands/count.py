@@ -84,8 +84,7 @@ def get_by_project(sessions, project):
     return sessions
 
 
-def get_by_type(sessions, type):
-    type_filter = type.split(" ")
+def get_by_type(sessions, type_filter):
     sessions = [s for s in sessions if s["type"] in type_filter]
     return sessions
 
@@ -139,5 +138,6 @@ def parse_count(subparsers):
     count_parser.add_argument(
         "--type",
         "-tp",
+        nargs="*"
     )
     count_parser.set_defaults(func=list_sessions)
