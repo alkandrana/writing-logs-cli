@@ -1,6 +1,8 @@
 import sys
 from typing import Any
 
+from requests import JSONDecodeError
+
 from wlogs import load_config
 from wlogs.commands.auth import send_auth_request
 
@@ -92,7 +94,18 @@ def get_project_by_code(code):
         "endpoint": f"{load_config()['api_url']}/projects/code/{code}",
     }
     res = send_auth_request(request)
-    return res.json()[0]
+    if 200 <= res.status_code < 300:
+        return res.json()[0]
+    elif res.status_code == 404:
+        print("No projects found matching that code.")
+        sys.exit(1)
+    else:
+        print(f"An error occurred: {res.status_code}: {res.reason}")
+        try:
+            print(f"Details: {res.json()}")
+        except JSONDecodeError:
+            print("Details: No error message returned.")
+        sys.exit(1)
 
 
 def get_project_by_id(pid):
