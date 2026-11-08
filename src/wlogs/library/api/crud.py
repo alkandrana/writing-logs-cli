@@ -4,6 +4,7 @@ from typing import Any
 from ... import load_config
 from .auth import send_auth_request
 
+
 def send_fetch_request(request: dict[str, Any]) -> dict[str, Any] | None:
     res = send_auth_request(request)
     if 200 <= res.status_code < 300:
@@ -11,6 +12,7 @@ def send_fetch_request(request: dict[str, Any]) -> dict[str, Any] | None:
     else:
         print(f"An error occurred: {res.status_code}, {res.reason}")
         return
+
 
 def get_record_id(code: str, endpoint: str) -> list[dict[str, str | int | None]] | None:
     request = {
@@ -82,7 +84,7 @@ def get_status_values() -> list[dict[str, Any]]:
 
 
 def get_patch_payload(value, prop):
-    payload = [{"op": "replace", "path": prop, "value": value}]
+    payload = {"op": "replace", "path": prop, "value": value}
     return payload
 
 

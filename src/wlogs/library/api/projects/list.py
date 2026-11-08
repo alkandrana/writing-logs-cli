@@ -98,20 +98,13 @@ def view_one(args):
 
 def get_project_code(args):
     project_id = args.id
-    request = {
-        "method": "GET",
-        "endpoint": f"{load_config()['api_url']}/projects/{project_id}",
-    }
-    code = get_project_by_id(request)
+    code = get_project_by_id(args.id)
     print(f"Project {project_id}: {code}")
 
 
 def parse_project_list(project_subparsers):
     list_parser = project_subparsers.add_parser("list")
     list_subparsers = list_parser.add_subparsers(dest="sub2command")
-    code_parser = list_subparsers.add_parser("code")
-    code_parser.add_argument("--id", required=True)
-    code_parser.set_defaults(func=get_project_code)
 
     all_parser = list_subparsers.add_parser("all")
     all_parser.set_defaults(func=view_all)
