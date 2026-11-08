@@ -5,11 +5,15 @@ from datetime import datetime
 from pathlib import Path
 
 from wlogs import get_store_path, load_config
-from wlogs.library.api.scenes.scene import get_scene_by_id, get_scene_id
-from wlogs.library.api.scenes.update import build_patch, send_update_request
-from wlogs.library.api.sessions.create_session import post_session
-from wlogs.library.api.statuses.list import get_status_id, get_status_name
-from wlogs.library.dates import print_dict, to_zulu
+from wlogs.utils.basic_utils import print_dict, to_zulu
+from wlogs.utils.scene_utils import (
+    build_patch,
+    get_scene_by_id,
+    get_scene_id,
+    send_update_request,
+)
+from wlogs.utils.session_utils import post_session
+from wlogs.utils.status_utils import get_status_id, get_status_name
 
 
 # Construct dict of starting session data
@@ -197,7 +201,9 @@ def save_session(data: dict[str, str | int]):
     res = post_session(session)
     if 200 <= res.status_code < 300:
         save_local(data)
-        update_scene_count(int(session["sceneId"]), int(session["words"]), data["type"])
+        update_scene_count(
+            int(session["sceneId"]), int(session["words"]), str(data["type"])
+        )
         print(f"Scene count updated for scene {data['scene']}")
     else:
         print("Unable to save session to API.")
@@ -269,9 +275,7 @@ def cancel(_):
         print("No session running.")
 
 
-def parse_session(subparsers):
-    session_parser = subparsers.add_parser("session")
-    session_subparsers = session_parser.add_subparsers(dest="subcommand")
+def parse_create_session(session_subparsers):
 
     start_parser = session_subparsers.add_parser("start")
     start_parser.add_argument("--scene", "-s", help="Scene Code")

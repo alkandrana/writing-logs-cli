@@ -1,9 +1,10 @@
-import sys
 import argparse
-from wlogs.library.api.scenes.scene import get_scene_id
-from wlogs.library.api.statuses.list import get_status_id
+import sys
+
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
+from wlogs.commands.auth import send_auth_request
+from wlogs.utils.scene_utils import get_scene_id
+from wlogs.utils.status_utils import get_status_id
 
 
 def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:

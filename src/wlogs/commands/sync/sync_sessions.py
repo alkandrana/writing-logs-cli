@@ -4,10 +4,9 @@ import sys
 from pathlib import Path
 
 from wlogs import load_config
-from wlogs.library.api.crud import post_record
-from wlogs.library.dates import join_date, to_zulu
-
-from ...scenes.scene import get_scene_id
+from wlogs.utils.basic_utils import join_date, to_zulu
+from wlogs.utils.crud import post_record
+from wlogs.utils.scene_utils import get_scene_id
 
 
 # 1. get sessions from log

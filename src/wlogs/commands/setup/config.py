@@ -1,10 +1,9 @@
 import json
 import sys
 
-from wlogs.library.api.auth import check_server_health
-
-from ... import get_store_path
-from ...library.file_search import find_file
+from wlogs import get_store_path
+from wlogs.commands.auth import check_server_health
+from wlogs.utils.file_search import find_file
 
 
 def set_log_file(_):

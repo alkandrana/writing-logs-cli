@@ -1,4 +1,4 @@
-from wlogs.library.api.scenes.scenes_by_project import get_scenes_by_project
+from wlogs.utils.scene_utils import get_scenes_by_project
 
 
 def get_project_words(code):

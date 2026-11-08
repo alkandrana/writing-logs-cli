@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
+from wlogs.commands.auth import send_auth_request
 
 
 def get_projects():

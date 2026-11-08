@@ -4,8 +4,8 @@ from typing import Any
 import pandas as pd
 
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
-from wlogs.library.api.scenes.scenes_by_project import get_scenes_by_project
+from wlogs.commands.auth import send_auth_request
+from wlogs.utils.scene_utils import get_scenes_by_project
 
 
 def get_scenes_by_code(code: str) -> list[dict[str, Any]]:

@@ -1,11 +1,10 @@
 import sys
 
 from wlogs import load_config
-from wlogs.commands import get_project_id
-from wlogs.library.api.auth import send_auth_request
-from wlogs.library.api.crud import check_record_exists
-from wlogs.library.api.projects.list import get_projects
-from wlogs.library.api.statuses.list import get_status_id
+from wlogs.commands.auth import send_auth_request
+from wlogs.utils.crud import check_record_exists
+from wlogs.utils.project_utils import get_project_id, get_projects
+from wlogs.utils.status_utils import get_status_id
 
 
 def post_scene(body: dict[str, str | int]):

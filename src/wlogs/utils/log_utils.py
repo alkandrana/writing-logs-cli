@@ -1,8 +1,11 @@
+import csv
+import sys
 from pathlib import Path
-import csv, sys
+
 from wlogs import load_config
-from ...crud import check_record_exists
-from .string_utils import split_compound_id
+
+from .crud import check_record_exists
+from .scene_utils import split_compound_id
 
 
 def get_scenes_in_log():
@@ -11,7 +14,7 @@ def get_scenes_in_log():
         with open(log_file, "r") as f:
             reader = csv.DictReader(f)
             # returns a list of unique scene codes
-            scenes = list(set([row["scene"].upper() for row in reader]))
+            scenes = list({row["scene"].upper() for row in reader})
         return scenes
     else:
         print("Log file could not be found.")
@@ -36,7 +39,7 @@ def get_projects_from_scenes() -> dict[str, list[str]]:
 
 def check_sync_projects(projects: dict[str, list[str]]) -> list[str]:
     projects_to_create = []
-    for proj in projects.keys():
+    for proj in projects:
         if not check_record_exists(proj, "projects"):
             projects_to_create.append(proj)
     return projects_to_create

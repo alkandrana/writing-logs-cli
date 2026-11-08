@@ -1,5 +1,5 @@
-from wlogs.library.api.crud import get_patch_payload
-from wlogs.library.api.projects.update import build_project_patch, patch_goal
+from wlogs.utils.crud import get_patch_payload
+from wlogs.utils.project_utils import build_project_patch, patch_project
 
 
 def update_project(args):
@@ -15,7 +15,7 @@ def update_project(args):
     print("Patch request: ", request)
     c = input("Proceed with update? (y/n): ")
     if c.lower() == "y":
-        patch_goal(request)
+        patch_project(request)
 
 
 def parse_update_project(project_subparsers):

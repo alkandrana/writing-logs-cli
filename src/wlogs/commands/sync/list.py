@@ -1,9 +1,12 @@
 from pathlib import Path
 
 from wlogs import load_config
-
-from ...scenes.scene_utils import get_scene_details_from_csv
-from .log_utils import check_sync_projects, check_sync_scenes, get_projects_from_scenes
+from wlogs.utils.log_utils import (
+    check_sync_projects,
+    check_sync_scenes,
+    get_projects_from_scenes,
+)
+from wlogs.utils.scene_utils import get_scene_details_from_csv
 
 
 def print_all_scenes(args):
@@ -42,7 +45,7 @@ def print_all_scenes(args):
                         match = [
                             s
                             for s in scenes
-                            if s["code"].lower() == f"{proj.lower()}-{sc.lower()}"
+                            if str(s["code"]).lower() == f"{proj.lower()}-{sc.lower()}"
                         ]
                         if len(match) == 0:
                             unregistered_scenes.append(sc)

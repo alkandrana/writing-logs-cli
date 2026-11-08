@@ -1,8 +1,8 @@
 import sys
 from typing import Any
 
-from ... import load_config
-from .auth import send_auth_request
+from wlogs import load_config
+from wlogs.commands.auth import send_auth_request
 
 
 def send_fetch_request(request: dict[str, Any]) -> dict[str, Any] | None:

@@ -1,12 +1,22 @@
 import sys
 
-from wlogs.commands import get_project_id
-from wlogs.library.api.crud import check_record_exists
-
-from ...projects.create import get_project_details, post_project
-from ...scenes.create_scene import get_scene_details, post_scene
-from ...scenes.scene_utils import get_csv_path, get_scene_details_from_csv
-from .log_utils import check_sync_projects, check_sync_scenes, get_projects_from_scenes
+from wlogs.utils.crud import check_record_exists
+from wlogs.utils.log_utils import (
+    check_sync_projects,
+    check_sync_scenes,
+    get_projects_from_scenes,
+)
+from wlogs.utils.project_utils import (
+    get_project_details,
+    get_project_id,
+    post_project,
+)
+from wlogs.utils.scene_utils import (
+    get_csv_path,
+    get_scene_details,
+    get_scene_details_from_csv,
+    post_scene,
+)
 
 
 def sync_log_projects():
@@ -48,7 +58,9 @@ def sync_log_scenes():
         for i, sc in enumerate(codes_to_add):
             print(f"Creating scene {i + 1} of {len(codes_to_add)}")
             code = f"{proj}-{sc}"
-            results = [sc for sc in scene_details if sc["code"].lower() == code.lower()]
+            results = [
+                sc for sc in scene_details if str(sc["code"]).lower() == code.lower()
+            ]
             if len(results) > 1:
                 print(f"Scene code {code} is not unique.")
                 sys.exit(1)

@@ -1,4 +1,4 @@
-from ...library.api.projects.create import post_project
+from ...utils.project_utils import post_project
 
 
 # get input from user

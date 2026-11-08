@@ -6,8 +6,6 @@ from typing import Any
 
 from dateutil import parser
 
-from wlogs.commands.setup.config import get_store_path
-
 
 def to_zulu(date_str: str) -> str:
     date = datetime.fromisoformat(date_str)  # expects ISO string with local offset

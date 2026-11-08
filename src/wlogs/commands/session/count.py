@@ -4,9 +4,9 @@ from datetime import datetime
 import pandas as pd
 
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
-from wlogs.library.api.crud import get_record_by_id
-from wlogs.library.dates import to_local
+from wlogs.commands.auth import send_auth_request
+from wlogs.utils.basic_utils import to_local
+from wlogs.utils.crud import get_record_by_id
 
 pd.set_option("display.max_rows", 100)
 
@@ -41,23 +41,6 @@ def print_sessions(sessions):
     ]
     dataframe = pd.DataFrame(sessions)
     print(dataframe)
-    # for ses in sessions:
-    #     print(build_session_title(ses) + ":")
-    #     for key, value in ses.items():
-    #         if key == "scene" and value and "code" in value:
-    #             print(f"{key}: {value['code']}")
-    #
-    #         elif key == "author" and value and "userName" in value:
-    #             print(f"{key}: {value['userName']}")
-    #         elif "time" in key.lower() and value:
-    #             value = datetime.fromisoformat(value)
-    #             value = value.astimezone()
-    #             print(f"{key}: {datetime.strftime(value, '%Y-%m-%d %H:%M:%S')}")
-    #         elif (key == "duration" or key == "wpm") and value:
-    #             print(f"{key}: {round(value)}")
-    #         elif "id" not in key.lower():
-    #             print(f"{key}: {value}")
-    #     print("\n")
 
 
 def build_session_title(session):
@@ -127,17 +110,13 @@ def list_sessions(args):
         print_sessions(sessions)
 
 
-def parse_count(subparsers):
-    count_parser = subparsers.add_parser("count")
+def parse_count_sessions(session_subparsers):
+    count_parser = session_subparsers.add_parser("count")
     count_parser.add_argument("--today", "-t", action="store_true")
     count_parser.add_argument("--date", "-d", required=False)
     count_parser.add_argument("--scene", "-s", required=False)
     count_parser.add_argument("--project", "-p", required=False)
     count_parser.add_argument("--count", "-c", action="store_true", required=False)
     count_parser.add_argument("--wpm", "-w", action="store_true", required=False)
-    count_parser.add_argument(
-        "--type",
-        "-tp",
-        nargs="*"
-    )
+    count_parser.add_argument("--type", "-tp", nargs="*")
     count_parser.set_defaults(func=list_sessions)

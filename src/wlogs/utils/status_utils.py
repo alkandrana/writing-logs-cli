@@ -1,7 +1,7 @@
 import sys
 
 from wlogs import load_config
-from wlogs.library.api.auth import send_auth_request
+from wlogs.commands.auth import send_auth_request
 
 
 def get_status_id(name: str) -> str:

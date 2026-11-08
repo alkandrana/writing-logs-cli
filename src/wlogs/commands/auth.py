@@ -29,14 +29,12 @@ def check_server_health(url):
 
 
 def send_auth_request(request: dict[str, Any]):
-    print("Initializing authentication...")
     access_token = get_access_token()
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
     request["headers"] = headers
-    print(f"Sending request to {request['endpoint']}...")
     res = validate_response(request)
     return res
 

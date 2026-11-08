@@ -1,16 +1,6 @@
 import sys
+
 import requests
-
-from wlogs import load_config
-from wlogs.library.api.crud import get_record_id
-
-
-
-def get_project_id(project_code: str) -> int | None:
-    options = get_record_id(project_code, "projects")
-    if options:
-        project = options[0]
-        return project["id"]
 
 
 def send_request(request):
@@ -31,4 +21,4 @@ def validate_response(res):
         print(f"Error: {res.status_code} - {res.reason}")
         print(f"Error message: {res.json()}")
     else:
-        print(f"Something went wrong. Please try again later.")
+        print("Something went wrong. Please try again later.")
