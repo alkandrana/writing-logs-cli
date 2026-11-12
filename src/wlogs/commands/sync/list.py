@@ -23,7 +23,7 @@ def get_scenelist_records(code: str):
     scenelist_paths = get_scene_csv()
     scene_csv = [f for f in scenelist_paths if code.lower() in f.name.lower()]
     if len(scene_csv) > 1:
-        print("Multiple scenelists found for project {code}.")
+        print(f"Multiple scenelists found for project {code}.")
         for i, f in enumerate(scene_csv):
             print(f"{i}. {f}")
         choice = input("Please specify which scenelist you want to use: ")
@@ -82,8 +82,8 @@ def print_all_scenes(args):
             # find the csv file corresponding to the project code and load its scene records
             scenes = get_scenelist_records(proj)
             manual_scenes = get_manual_scenes(proj, scene_codes, scenes)
+            print(f"{proj.upper()}:")
             if len(manual_scenes) > 0:
-                print(f"{proj}:")
                 print(f"Scenes that need to be manually created: {manual_scenes}")
             else:
                 print("All scenes can be automatically created!")
