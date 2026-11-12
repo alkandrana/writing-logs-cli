@@ -1,45 +1,25 @@
-import sys
+from ...utils.project_utils import post_project
 
-from wlogs import load_config
-from pathlib import Path
-from ...library.file.projects.new_project import create_book_structure
-from ...library.api.projects.create import post_project
 
 # get input from user
-def create_new_project(args):
-    name = args.name
-    novel_home = Path(load_config()["novel_home"])
-    if novel_home.exists():
-        print("Creating new project directory...")
-        new_proj = novel_home / name
-        new_proj.mkdir(parents=True, exist_ok=True)
-        print("Creating books directory...")
-        (new_proj / "books").mkdir(parents=True, exist_ok=True)
-        print("Creating README stub...")
-        (new_proj / "README.md").touch()
-        choice = input("Add optional description? (y/n): ")
-        if choice == "y":
-            description = input("Enter description: ")
-        else:
-            description = ""
-        with open(new_proj / "README.md", "w") as f:
-            f.write(f"# {name}\n{description}")
-        print(f"Project structure created for {name}")
-    else:
-        print(f"Novel home missing or out of date. Update it with 'wlogs config novel'")
-        sys.exit(1)
+def get_book_details(code):
+    book = {"code": code}
+    book["title"] = input("Enter book title: ")
+    book["series"] = input("Enter series title (enter to skip): ")
+    book["goal"] = input("Enter book word count goal (default 100,000): ")
+    if not book["goal"]:
+        book["goal"] = 100000
+    return book
+
 
 def add_new_book(args):
-    book = create_book_structure(args.code, args.project)
+    book = get_book_details(args.code)
     post_project(book)
 
 
 def parse_new_project(project_subparsers):
-    create_parser = project_subparsers.add_parser("create")
-    create_parser.add_argument("--name", "-n", required=True, help="Name of the new project. This will be used as the directory name, as well.")
-    create_parser.set_defaults(func=create_new_project)
-
     book_parser = project_subparsers.add_parser("add")
-    book_parser.add_argument("--code", "-c", required=True, help="Code for the new book.")
-    book_parser.add_argument("--project", "-p", required=True, help="(Directory) name of the project in which to create the book")
+    book_parser.add_argument(
+        "--code", "-c", required=True, help="Code for the new book."
+    )
     book_parser.set_defaults(func=add_new_book)
