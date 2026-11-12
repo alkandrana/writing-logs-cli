@@ -23,11 +23,14 @@ def get_scenelist_records(code: str):
     scenelist_paths = get_scene_csv()
     scene_csv = [f for f in scenelist_paths if code.lower() in f.name.lower()]
     if len(scene_csv) > 1:
-        print(f"Multiple scenelists found for project {code}.")
-        for i, f in enumerate(scene_csv):
-            print(f"{i}. {f}")
-        choice = input("Please specify which scenelist you want to use: ")
-        scene_csv = scene_csv[int(choice)]
+        if len([f for f in scene_csv if "all" in f.name.lower()]) == 1:
+            scene_csv = next(f for f in scene_csv if "all" in f.name.lower())
+        else:
+            print(f"Multiple scenelists found for project {code}.")
+            for i, f in enumerate(scene_csv):
+                print(f"{i}. {f}")
+            choice = input("Please specify which scenelist you want to use: ")
+            scene_csv = scene_csv[int(choice)]
     elif len(scene_csv) < 1:
         return []
     else:
@@ -77,16 +80,17 @@ def print_all_scenes(args):
     print("Scenes that need to be synced: ")
 
     # Find scene codes that don't exist in the database, check for corresponding records in csv file, and print the results
+    print()
     for proj, scene_codes in scenes_to_create.items():
         if len(scene_codes) > 0 and proj not in unlisted_projects:
             # find the csv file corresponding to the project code and load its scene records
             scenes = get_scenelist_records(proj)
             manual_scenes = get_manual_scenes(proj, scene_codes, scenes)
-            print(f"{proj.upper()}:")
             if len(manual_scenes) > 0:
-                print(f"Scenes that need to be manually created: {manual_scenes}")
-            else:
-                print("All scenes can be automatically created!")
+                print(
+                    f"{proj.upper()} scenes that need to be manually created: {manual_scenes}"
+                )
+    print()
 
 
 def get_scene_csv() -> list[Path]:
