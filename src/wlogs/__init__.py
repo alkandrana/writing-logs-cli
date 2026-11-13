@@ -12,7 +12,6 @@ def load_config() -> dict[str, str]:
         if (
             "api_url" not in config
             or "log_file" not in config
-            or "novel_home" not in config
         ):
             print(
                 "Config not complete. Set it up with 'wlogs config log' or 'wlogs config api' or 'wlogs config novel'"

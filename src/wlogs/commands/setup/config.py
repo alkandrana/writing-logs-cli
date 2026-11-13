@@ -47,33 +47,6 @@ def set_api_url(_):
             "Server is down or url is incorrect. Check your spelling or try again later."
         )
 
-
-def set_novel_home(_):
-    novel_home = input(
-        "Enter the name of the directory where you want to store your novel projects: "
-    )
-    print("Locating novel directory...")
-    novel_home_path = find_file(novel_home)
-    config_file = get_store_path() / "config.json"
-    print("Loading current config...")
-    if novel_home_path and novel_home_path.exists():
-        if config_file.exists():
-            with open(config_file, "r") as f:
-                config = json.load(f)
-            config["novel_home"] = str(novel_home_path)
-        else:
-            config = {"novel_home": str(novel_home_path)}
-        print(config)
-        with open(config_file, "w") as f:
-            json.dump(config, f)
-        print(f"Novel home path written to {config_file}")
-    else:
-        print(
-            "Novel home directory could not be found. Check your spelling and try again."
-        )
-        sys.exit(1)
-
-
 def parse_config(subparsers):
     config_parser = subparsers.add_parser("config")
     config_subparsers = config_parser.add_subparsers(dest="subcommand")
@@ -83,6 +56,3 @@ def parse_config(subparsers):
 
     api_parser = config_subparsers.add_parser("api")
     api_parser.set_defaults(func=set_api_url)
-
-    novel_home_parser = config_subparsers.add_parser("novel")
-    novel_home_parser.set_defaults(func=set_novel_home)

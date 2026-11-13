@@ -3,6 +3,7 @@
 .env
 **/__pycache__/
 **/*.egg-info
+.venv/
 
 # Mac system files
 **/.DS_Store*
