@@ -1,9 +1,10 @@
+import json
 import sys
+from typing import Any
 
 import keyring as kr
 import maskpass
 import requests
-from typing import Any
 
 from wlogs import load_config
 
@@ -83,10 +84,12 @@ def validate_response(request):
         else:
             print("Request failed.")
             print("An error occurred:", response.status_code, response.reason)
-            if response.json():
+            try:
                 error = response.json()
                 print(f"Error message: {error}")
-            sys.exit(1)
+                sys.exit(1)
+            except json.JSONDecodeError:
+                print("No error message found.")
     # if request did not succeed
     else:
         print("Non-authorization error.")

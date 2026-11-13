@@ -106,12 +106,21 @@ def list_sessions(args):
     if args.count:
         word_count = count_sessions(sessions)
         print(f"\n{word_count:,} words written in all sessions.")
+    if args.all:
+        print(f"WARNING: Found {len(sessions)} sessions in the database.")
+        choice = input("Proceed? (y/n): ")
+        if choice.lower() == "y":
+            print_sessions(sessions)
     else:
-        print_sessions(sessions)
+        print("No valid filter found.")
+        sys.exit(1)
 
 
 def parse_count_sessions(session_subparsers):
     count_parser = session_subparsers.add_parser("count")
+    count_parser.add_argument(
+        "--all", "-a", action="store_true", help="List all sessions in the database"
+    )
     count_parser.add_argument("--today", "-t", action="store_true")
     count_parser.add_argument("--date", "-d", required=False)
     count_parser.add_argument("--scene", "-s", required=False)
