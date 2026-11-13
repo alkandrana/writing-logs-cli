@@ -19,6 +19,10 @@ dependencies = [
     "maskpass==0.3.7",
     "pandas==3.0.5"
 ]
+[project.optional-dependencies]
+wsl = [
+  "keyring-wincred",
+]
 
 [project.scripts]
 wlogs = "wlogs.main:main"
