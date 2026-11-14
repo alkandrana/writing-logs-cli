@@ -4,6 +4,7 @@ from wlogs.utils.crud import check_record_exists
 from wlogs.utils.log_utils import (
     check_sync_projects,
     check_sync_scenes,
+    get_project_records,
     get_projects_from_scenes,
 )
 from wlogs.utils.project_utils import (
@@ -30,8 +31,14 @@ def sync_log_projects():
     # 3. add projects to api
     if len(projects_to_add) > 0:
         print(f"Adding projects: {projects_to_add}")
+        projects = get_project_records()
         for p in projects_to_add:
-            project = get_project_details(p)
+            project = next(
+                (pr for pr in projects if pr["code"].lower() == p.lower()), {}
+            )
+            if not project:
+                print(f"No project details found for project {p.upper()}")
+                project = get_project_details(p)
             post_project(project)
         print(f"Synced projects: {projects_to_add}")
     else:
@@ -62,7 +69,7 @@ def sync_log_scenes():
                 sc for sc in scene_details if str(sc["code"]).lower() == code.lower()
             ]
             if len(results) > 1:
-                print(f"Scene code {code} is not unique.")
+                print(f"Scene code {code} is not unique. Please check scene list for corrupted data.")
                 sys.exit(1)
             elif len(results) < 1:
                 print(f"Scene code {code} not found in file.")

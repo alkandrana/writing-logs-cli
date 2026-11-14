@@ -175,13 +175,15 @@ def get_csv_path(code: str) -> Path | None:
     log_loc = Path(load_config()["log_file"])
     log_dir = log_loc.parent
     search = [f for f in log_dir.rglob(f"*{code.upper()}*")]
-    if len(search) == 1:
-        filepath = search[0]
-    elif len(search) == 0:
+    if len(search) == 0:
         print(
             f"No file found for project {code}. You will need to manually enter details for any scenes in this project."
         )
         filepath = None
+    elif len(search) == 1:
+        filepath = search[0]
+    elif len([f for f in search if "all" in f.name.lower()]) == 1:
+        filepath = next(f for f in search if "all" in f.name.lower())
     else:
         print(f"Something went wrong: {search}")
         sys.exit(1)

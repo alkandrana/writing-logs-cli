@@ -24,16 +24,18 @@ def get_records_from_csv(path: str):
 
 # 2. format sessions, accounting for variations in data
 def format_local_session(ses: dict[str, str | int | None]):
-    scene_id = get_scene_id(str(ses["scene_id"]))
-    ses["start"] = join_date(str(ses["start"]), str(ses["date"]))
-    ses["stop"] = join_date(str(ses["stop"]), str(ses["date"]))
+    scene_id = get_scene_id(str(ses["scene"]))
+    ses["start_time"] = join_date(str(ses["start_time"]), str(ses["date"]))
+    ses["stop_time"] = join_date(str(ses["stop_time"]), str(ses["date"]))
     session = {
+        "code": ses["id"],
         "date": ses["date"],
-        "startTime": to_zulu(ses["start"]) if ses["start"] else None,
-        "stopTime": to_zulu(ses["stop"]) if ses["stop"] else None,
+        "startTime": to_zulu(ses["start_time"]) if ses["start_time"] else None,
+        "stopTime": to_zulu(ses["stop_time"]) if ses["stop_time"] else None,
         "words": ses["words"],
         "sceneId": scene_id,
-        "comments": ses["note"],
+        "type": ses["type"],
+        "comments": ses["comments"],
     }
     return session
 
@@ -43,9 +45,15 @@ def batch_sessions(_: argparse.Namespace):
     sessions = get_records_from_csv(load_config()["log_file"])
     print("Converting sessions to payload...")
     batch = [format_local_session(s) for s in sessions]
-    print("Posting sessions to API...")
-    for p in batch:
-        post_record(p, "sessions")
+    print(f"Found {len(batch)} sessions")
+    if len(batch) > 0:
+        print(f"Example payload: {batch[0]}")
+        choice = input("Proceed? (y/n:)")
+        if choice.lower() == "y":
+            for p in batch:
+                post_record(p, "sessions")
+    else:
+        print("All sessions up to date.")
 
 
 def parse_batch_sessions(sync_subparsers):
