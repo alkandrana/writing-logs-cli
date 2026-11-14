@@ -194,6 +194,7 @@ def get_scene_details_from_csv(filepath: Path) -> list[dict[str, str | int]]:
         data = [{k.lower(): v for k, v in row.items()} for row in reader]
     scenes = []
     for row in data:
+        # print(f"TEST: Building scene record from csv for {row}")
         status: str = convert_status(row["status"])
         status_id = get_status_id(status)
         project = row["id"][0 : row["id"].index("-")] if "-" in row["id"] else None

@@ -87,16 +87,18 @@ def validate_response(request):
             try:
                 error = response.json()
                 print(f"Error message: {error}")
-                sys.exit(1)
             except json.JSONDecodeError:
                 print("No error message found.")
+            sys.exit(1)
     # if request did not succeed
     else:
         print("Non-authorization error.")
         print("An error occurred:", response.status_code, response.reason)
-        if response.json():
+        try:
             error = response.json()
             print(f"Error message: {error}")
+        except json.JSONDecodeError:
+            print("No error message returned.")
         sys.exit(1)
 
 
