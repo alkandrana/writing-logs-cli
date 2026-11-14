@@ -44,6 +44,20 @@ def check_sync_projects(projects: dict[str, list[str]]) -> list[str]:
             projects_to_create.append(proj)
     return projects_to_create
 
+def check_project_list(projects: list[str]):
+    project_csv = Path(load_config()['log_file']).parent / "projects.csv"
+    manual_projects = []
+    if project_csv.exists():
+        with open(project_csv, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            project_records = [row for row in reader]
+        for p in projects:
+            if not any(pr for pr in project_records if pr['code'] == p):
+                manual_projects.append(p)
+        return manual_projects
+    else:
+        print("No projects.csv found in log directory. All projects must be manually created.")
+        return []
 
 def check_sync_scenes(projects: dict[str, list[str]]):
     scenes_to_create: dict[str, list[str]] = {}

@@ -4,6 +4,7 @@ from wlogs import load_config
 from wlogs.utils.log_utils import (
     check_sync_projects,
     check_sync_scenes,
+    check_project_list,
     get_projects_from_scenes,
 )
 from wlogs.utils.scene_utils import get_scene_details_from_csv
@@ -69,10 +70,15 @@ def print_all_scenes(args):
     projects_to_create = check_sync_projects(projects)
     print("Projects that need to be synced: ", projects_to_create)
 
+    # Get list of projects not in projects.csv
+    print("Checking for projects that need to be manuallly created...")
+    manual_projects = check_project_list(projects_to_create)
+    print(f"Projects that need to be manually created: {manual_projects}")
+
     # Get list of csv scene paths and check filenames against list of project codes
     print("Checking for csv scene lists...")
     unlisted_projects = get_unlisted_projects(projects_to_create)
-    print(f"Projects that need to be manually created: {unlisted_projects}")
+    print(f"Projects for which no scene list file exists: {unlisted_projects}")
 
     # Check list of scene codes for scenes that do not exist in the database
     print("Checking for scenes that need to be synced...")
