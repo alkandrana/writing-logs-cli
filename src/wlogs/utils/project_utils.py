@@ -26,12 +26,9 @@ def get_project_details(code: str) -> dict[str, Any]:
     return book
 
 
-def get_project_id(project_code: str) -> int | None:
-    options = get_record_id(project_code, "projects")
-    if options:
-        project = options[0]
-        pid = int(project["id"]) if project["id"] else 0
-        return pid
+def get_project_id(project_code: str) -> int:
+    project_id = get_record_id(project_code, "projects")
+    return project_id if project_id else 0
 
 
 def post_project(book):

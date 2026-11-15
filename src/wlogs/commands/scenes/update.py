@@ -3,26 +3,9 @@ import sys
 
 from wlogs import load_config
 from wlogs.commands.auth import send_auth_request
+from wlogs.utils.crud import build_patch, send_update_request
 from wlogs.utils.scene_utils import get_scene_id
 from wlogs.utils.status_utils import get_status_id
-
-
-def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:
-    data = {"op": "replace", "path": f"/{property_name}", "value": value}
-    print(f"Patch built: {data}")
-    return data
-
-
-def send_update_request(request):
-    res = send_auth_request(request)
-    if 200 <= res.status_code < 300:
-        print("Scene updated successfully")
-    elif res.status_code == 404:
-        print("Scene not found.")
-        sys.exit(1)
-    else:
-        print("An error occurred: ", res.status_code, res.reason, res.json())
-        sys.exit(1)
 
 
 def update_scene(args: argparse.Namespace):
@@ -50,7 +33,7 @@ def update_scene(args: argparse.Namespace):
     }
     c = input("Proceed? (y/n): ")
     if c.lower() == "y":
-        send_update_request(request)
+        send_update_request(request, "scene")
 
 
 def parse_update_scene(scene_subparsers):

@@ -13,8 +13,15 @@ def send_fetch_request(request: dict[str, Any]) -> dict[str, Any] | None:
         print(f"An error occurred: {res.status_code}, {res.reason}")
         return
 
+def print_error_message(res):
+    print(f"An error occurred: {res.status_code} {res.reason}")
+    try:
+        print(f"Error message: {res.json()}")
+    except json.JSONDecodeError:
+        print("No error message returned.")
+    sys.exit(1)
 
-def get_record_id(code: str, endpoint: str) -> list[dict[str, str | int | None]] | None:
+def get_record_id(code: str, endpoint: str) -> int | None:
     request = {
         "method": "GET",
         "endpoint": f"{load_config()['api_url']}/{endpoint}/code/{code}",
@@ -23,8 +30,11 @@ def get_record_id(code: str, endpoint: str) -> list[dict[str, str | int | None]]
     if res.status_code == 404:
         print(f"Record {code} not found at {request['endpoint']}.")
         return
+    elif 400 <= res.status_code < 500:
+        print_error_message(res)
     else:
-        return res.json()
+        record = res.json()
+        return record['id']
 
 
 def get_record_by_code(code, endpoint):
@@ -83,9 +93,10 @@ def get_status_values() -> list[dict[str, Any]]:
         return res.json()
 
 
-def get_patch_payload(value, prop):
-    payload = {"op": "replace", "path": prop, "value": value}
-    return payload
+def build_patch(property_name: str, value: str | int) -> dict[str, str | int]:
+    data = {"op": "replace", "path": f"/{property_name}", "value": value}
+    print(f"Patch built: {data}")
+    return data
 
 
 def post_record(data: dict[str, str | int], endpoint: str):
@@ -103,4 +114,15 @@ def post_record(data: dict[str, str | int], endpoint: str):
         error = res.json()
         print("An error occured: ", res.status_code, res.reason)
         print(error)
+        sys.exit(1)
+
+def send_update_request(request: dict, record: str):
+    res = send_auth_request(request)
+    if 200 <= res.status_code < 300:
+        print(f"{record.capitalize()} updated successfully")
+    elif res.status_code == 404:
+        print(f"{record.capitalize()} not found.")
+        sys.exit(1)
+    else:
+        print("An error occurred: ", res.status_code, res.reason, res.json())
         sys.exit(1)

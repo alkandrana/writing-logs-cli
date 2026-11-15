@@ -1,4 +1,4 @@
-from wlogs.utils.crud import get_patch_payload
+from wlogs.utils.crud import build_patch
 from wlogs.utils.project_utils import build_project_patch, patch_project
 
 
