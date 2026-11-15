@@ -1,3 +1,4 @@
+import json
 import sys
 from typing import Any
 
@@ -6,7 +7,6 @@ import maskpass
 import requests
 
 from wlogs import load_config
-from wlogs.utils.crud import print_error_message
 
 # AUTH WORKFLOW
 # 1. User sends request
@@ -19,6 +19,14 @@ from wlogs.utils.crud import print_error_message
 # 3. send request
 #       if response unauthorized
 #           get_refresh_token()
+
+
+def print_error_message(res):
+    print(f"An error occurred: {res.status_code} {res.reason}")
+    try:
+        print(f"Error message: {res.json()}")
+    except json.JSONDecodeError:
+        print("No error message returned.")
 
 
 def check_server_health(url):

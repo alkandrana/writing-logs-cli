@@ -1,8 +1,7 @@
-import json
 import sys
 
 from wlogs import load_config
-from wlogs.commands.auth import send_auth_request
+from wlogs.commands.auth import print_error_message, send_auth_request
 
 
 def get_all_records(endpoint: str) -> list[dict]:
@@ -13,14 +12,6 @@ def get_all_records(endpoint: str) -> list[dict]:
         sys.exit(1)
     else:
         return res.json()
-
-
-def print_error_message(res):
-    print(f"An error occurred: {res.status_code} {res.reason}")
-    try:
-        print(f"Error message: {res.json()}")
-    except json.JSONDecodeError:
-        print("No error message returned.")
 
 
 def get_record_id(code: str, endpoint: str, property_name: str = "code") -> int:
