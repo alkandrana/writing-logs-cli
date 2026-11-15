@@ -1,5 +1,5 @@
-import sys
 import json
+import sys
 from typing import Any
 
 from wlogs import load_config
@@ -46,10 +46,17 @@ def get_record_by_code(code, endpoint):
         "endpoint": f"{load_config()['api_url']}/{endpoint}/code/{code}",
     }
     res = send_auth_request(request)
-    if 200 <= res.status_code < 300 or res.status_code == 404:
-        return res
+    if res.status_code == 404:
+        print(f"{endpoint} not found at {request['endpoint']}")
+        sys.exit(0)
+    elif 200 <= res.status_code < 300:
+        return res.json()
     else:
-        print("An error occurred: ", res.status_code, res.reason, res.json())
+        print("An error occurred: ", res.status_code, res.reason)
+        try:
+            print(f"Error Message: {res.json()}")
+        except json.JSONDecodeError:
+            print("No error message returned.")
         sys.exit(1)
 
 

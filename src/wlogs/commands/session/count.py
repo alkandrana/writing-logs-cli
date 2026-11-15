@@ -6,7 +6,7 @@ import pandas as pd
 from wlogs import load_config
 from wlogs.commands.auth import send_auth_request
 from wlogs.utils.basic_utils import to_local
-from wlogs.utils.crud import get_record_by_id
+from wlogs.utils.crud import get_record_by_code, get_record_by_id
 
 pd.set_option("display.max_rows", 100)
 
@@ -17,6 +17,11 @@ def get_all_sessions():
     sessions = res.json()
     sessions.sort(key=lambda x: datetime.fromisoformat(x["date"]))
     return sessions
+
+
+def get_one_session(code: str) -> dict[str, str | int | None]:
+    session = get_record_by_code(code, "sessions")
+    return session
 
 
 def print_sessions(sessions):
@@ -36,6 +41,7 @@ def print_sessions(sessions):
             "duration": round(ses["duration"]) if ses["duration"] else "",
             "wpm": round(ses["wpm"]) if ses["wpm"] else "",
             "type": ses["type"],
+            "comments": ses["comments"],
         }
         for ses in sessions
     ]
@@ -93,7 +99,9 @@ def calc_wpm(session):
 def list_sessions(args):
     sessions = get_all_sessions()
     if len(sys.argv) == 1:
-        print("No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'")
+        print(
+            "No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'"
+        )
         sys.exit(1)
     if args.scene:
         sessions = get_by_scene(sessions, args.scene)
@@ -102,7 +110,7 @@ def list_sessions(args):
     if args.date:
         sessions = get_by_date(args.date, sessions)
     if args.today:
-        date = datetime.strftime(datetime.today(), "%Y-%m-%d")
+        date = datetime.strftime(datetime.today().astimezone(), "%Y-%m-%d")
         sessions = get_by_date(date, sessions)
     if args.type:
         sessions = get_by_type(sessions, args.type)
@@ -118,7 +126,7 @@ def list_sessions(args):
 
     print_sessions(sessions)
 
-    
+
 def parse_count_sessions(session_subparsers):
     count_parser = session_subparsers.add_parser("count")
     count_parser.add_argument(
