@@ -2,26 +2,7 @@ import sys
 
 import pandas as pd
 
-from wlogs import load_config
-from wlogs.commands.auth import send_auth_request
-
-
-def get_projects():
-    request = {
-        "method": "GET",
-        "endpoint": f"{load_config()['api_url']}/projects",
-    }
-    res = send_auth_request(request)
-    if 200 <= res.status_code < 300:
-        return res.json()
-    else:
-        print(
-            "There was a problem fetching records: ",
-            res.status_code,
-            res.reason,
-            res.json(),
-        )
-        sys.exit(0)
+from wlogs.utils.crud import get_all_records, get_record_by_code, get_record_by_name
 
 
 def print_projects(projects):
@@ -43,31 +24,13 @@ def print_projects(projects):
         print("\nNo projects found matching that criterion.\n")
 
 
-def get_project_by_code(code):
-    request = {
-        "method": "GET",
-        "endpoint": f"{load_config()['api_url']}/projects/code/{code}",
-    }
-    res = send_auth_request(request)
-    return res.json()
-
-
-def get_project_by_name(title):
-    request = {
-        "method": "GET",
-        "endpoint": f"{load_config()['api_url']}/projects/name/{title}",
-    }
-    res = send_auth_request(request)
-    return res.json()
-
-
 def view_projects(args):
     if args.code:
-        projects = get_project_by_code(args.code)
+        projects = [get_record_by_code(args.code, "projects")]
     elif args.title:
-        projects = get_project_by_name(args.title)
+        projects = get_record_by_name(args.title, "projects")
     elif args.all:
-        projects = get_projects()
+        projects = get_all_records("projects")
     else:
         print(
             "No search criterion submitted. See 'wlogs project list --help' for more information."

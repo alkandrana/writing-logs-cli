@@ -3,19 +3,14 @@ from datetime import datetime
 
 import pandas as pd
 
-from wlogs import load_config
-from wlogs.commands.auth import send_auth_request
 from wlogs.utils.basic_utils import to_local
-from wlogs.utils.crud import get_record_by_code, get_record_by_id
+from wlogs.utils.crud import get_all_records, get_record_by_code, get_record_by_id
 
 pd.set_option("display.max_rows", 100)
 
 
-def get_all_sessions():
-    request = {"method": "GET", "endpoint": f"{load_config()['api_url']}/sessions"}
-    res = send_auth_request(request)
-    sessions = res.json()
-    sessions.sort(key=lambda x: datetime.fromisoformat(x["date"]))
+def get_all_sessions() -> list[dict | None]:
+    sessions = get_all_records("sessions")
     return sessions
 
 

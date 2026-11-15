@@ -1,8 +1,6 @@
 import sys
 from datetime import datetime, timedelta
 
-from wlogs import load_config
-
 from ...utils.crud import (
     build_patch,
     get_record_by_code,
@@ -15,7 +13,7 @@ def adjust_date(period, code):
     timespan = timedelta(days=period)
     session = get_record_by_code(code, "sessions")
     try:
-        current_date = datetime.fromisoformat(session["date"]).date()
+        current_date = datetime.fromisoformat(str(session["date"])).date()
     except ValueError:
         print("Date string is not a valid ISO format (e.g., YYYY-MM-DD)")
         sys.exit(1)
@@ -44,15 +42,10 @@ def update_session(args):
     if args.note:
         payload.append(build_patch("comments", args.note))
 
-    request = {
-        "endpoint": f"{load_config()['api_url']}/sessions/{session_id}",
-        "method": "PATCH",
-        "payload": payload,
-    }
     print(f"Ready to update: {payload}")
     c = input("Proceed? (y/n): ")
     if c.lower() == "y":
-        send_update_request(request, "session")
+        send_update_request(payload, "sessions", session_id)
 
 
 def parse_update_session(session_subparsers):

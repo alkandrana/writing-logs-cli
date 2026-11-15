@@ -1,4 +1,3 @@
-import json
 import sys
 from typing import Any
 
@@ -7,6 +6,7 @@ import maskpass
 import requests
 
 from wlogs import load_config
+from wlogs.utils.crud import print_error_message
 
 # AUTH WORKFLOW
 # 1. User sends request
@@ -29,7 +29,7 @@ def check_server_health(url):
         return False
 
 
-def send_auth_request(request: dict[str, Any]):
+def send_auth_request(request: dict[str, Any]) -> requests.Response:
     access_token = get_access_token()
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -83,22 +83,12 @@ def validate_response(request):
             return response
         else:
             print("Request failed.")
-            print("An error occurred:", response.status_code, response.reason)
-            try:
-                error = response.json()
-                print(f"Error message: {error}")
-            except json.JSONDecodeError:
-                print("No error message found.")
+            print_error_message(response)
             sys.exit(1)
     # if request did not succeed
     else:
         print("Non-authorization error.")
-        print("An error occurred:", response.status_code, response.reason)
-        try:
-            error = response.json()
-            print(f"Error message: {error}")
-        except json.JSONDecodeError:
-            print("No error message returned.")
+        print_error_message(response)
         sys.exit(1)
 
 
@@ -201,7 +191,8 @@ def register(_):
         print("Successfully registered.")
         print("Use 'wlogs login' to continue.")
     else:
-        print("Something went wrong: ", res.status_code, res.reason, res.json())
+        print_error_message(res)
+        sys.exit(1)
 
 
 def parse_auth(subparsers):

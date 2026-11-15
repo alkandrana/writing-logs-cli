@@ -1,4 +1,4 @@
-from ...utils.project_utils import post_project
+from wlogs.utils.crud import post_record
 
 
 # get input from user
@@ -14,7 +14,7 @@ def get_book_details(code):
 
 def add_new_book(args):
     book = get_book_details(args.code)
-    post_project(book)
+    post_record(book, "projects")
 
 
 def parse_new_project(project_subparsers):
