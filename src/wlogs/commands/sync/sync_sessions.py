@@ -48,7 +48,7 @@ def batch_sessions(_: argparse.Namespace):
     print(f"Found {len(batch)} sessions")
     if len(batch) > 0:
         print(f"Example payload: {batch[0]}")
-        choice = input("Proceed? (y/n:)")
+        choice = input("Proceed? (y/n): ")
         if choice.lower() == "y":
             for p in batch:
                 post_record(p, "sessions")
