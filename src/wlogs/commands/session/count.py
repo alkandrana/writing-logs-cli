@@ -92,6 +92,9 @@ def calc_wpm(session):
 
 def list_sessions(args):
     sessions = get_all_sessions()
+    if len(sys.argv) == 1:
+        print("No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'")
+        sys.exit(1)
     if args.scene:
         sessions = get_by_scene(sessions, args.scene)
     if args.project:
@@ -103,19 +106,19 @@ def list_sessions(args):
         sessions = get_by_date(date, sessions)
     if args.type:
         sessions = get_by_type(sessions, args.type)
-    if args.count:
-        word_count = count_sessions(sessions)
-        print(f"\n{word_count:,} words written in all sessions.")
     if args.all:
         print(f"WARNING: Found {len(sessions)} sessions in the database.")
         choice = input("Proceed? (y/n): ")
-        if choice.lower() == "y":
-            print_sessions(sessions)
-    else:
-        print("No valid filter found.")
-        sys.exit(1)
+        if choice.lower() == "n":
+            sys.exit(0)
+    if args.count:
+        word_count = count_sessions(sessions)
+        print(f"\n{word_count:,} words written in all sessions.")
+        sys.exit(0)
 
+    print_sessions(sessions)
 
+    
 def parse_count_sessions(session_subparsers):
     count_parser = session_subparsers.add_parser("count")
     count_parser.add_argument(
