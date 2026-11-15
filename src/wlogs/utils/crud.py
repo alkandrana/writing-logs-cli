@@ -1,4 +1,5 @@
 import sys
+import json
 from typing import Any
 
 from wlogs import load_config
@@ -13,6 +14,7 @@ def send_fetch_request(request: dict[str, Any]) -> dict[str, Any] | None:
         print(f"An error occurred: {res.status_code}, {res.reason}")
         return
 
+
 def print_error_message(res):
     print(f"An error occurred: {res.status_code} {res.reason}")
     try:
@@ -20,6 +22,7 @@ def print_error_message(res):
     except json.JSONDecodeError:
         print("No error message returned.")
     sys.exit(1)
+
 
 def get_record_id(code: str, endpoint: str) -> int | None:
     request = {
@@ -34,7 +37,7 @@ def get_record_id(code: str, endpoint: str) -> int | None:
         print_error_message(res)
     else:
         record = res.json()
-        return record['id']
+        return record["id"]
 
 
 def get_record_by_code(code, endpoint):
@@ -115,6 +118,7 @@ def post_record(data: dict[str, str | int], endpoint: str):
         print("An error occured: ", res.status_code, res.reason)
         print(error)
         sys.exit(1)
+
 
 def send_update_request(request: dict, record: str):
     res = send_auth_request(request)

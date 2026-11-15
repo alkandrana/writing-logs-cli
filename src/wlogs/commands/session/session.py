@@ -6,6 +6,7 @@ from pathlib import Path
 
 from wlogs import get_store_path, load_config
 from wlogs.utils.basic_utils import print_dict, to_zulu
+from wlogs.utils.crud import get_record_id
 from wlogs.utils.scene_utils import (
     build_patch,
     get_scene_by_id,
@@ -50,7 +51,7 @@ def build_session(args):
     if path.exists():
         with open(path, "r") as f:
             data = json.load(f)
-        if not "stop_time" in data:
+        if "stop_time" not in data:
             data["stop_time"] = datetime.isoformat(datetime.now().astimezone())
         if "start_words" in data:
             data["words"] = int(args.words) - int(data["start_words"])
@@ -123,24 +124,30 @@ def save_local(data):
 
 # format constructed session as payload to send to API
 def convert_to_session(data):
-    scene_id = get_scene_id(data["scene"])
-    # update scene status if scene hadn't been started yet
-    scene = get_scene_by_id(scene_id)
-    if get_status_name(int(scene["statusId"])).lower() == "pending":
-        status_update = build_patch("statusId", get_status_id("writing"))
-        send_update_request([status_update], scene_id)
-    return {
-        "date": data["date"],
-        "startTime": to_zulu(data["start_time"])
-        if data["start_time"]
-        else data["start_time"],
-        "stopTime": to_zulu(data["stop_time"])
-        if data["stop_time"]
-        else data["stop_time"],
-        "words": data["words"],
-        "sceneId": scene_id,
-        "type": data["type"],
-    }
+    scene_id = get_record_id(data["scene"], "scenes")
+    if scene_id:
+        # update scene status if scene hadn't been started yet
+        scene = get_scene_by_id(scene_id)
+        if get_status_name(int(scene["statusId"])).lower() == "pending":
+            status_update = build_patch("statusId", get_status_id("writing"))
+            send_update_request([status_update], scene_id)
+        return {
+            "date": data["date"],
+            "startTime": to_zulu(data["start_time"])
+            if data["start_time"]
+            else data["start_time"],
+            "stopTime": to_zulu(data["stop_time"])
+            if data["stop_time"]
+            else data["stop_time"],
+            "words": data["words"],
+            "sceneId": scene_id,
+            "type": data["type"],
+        }
+    else:
+        print(
+            f"That scene doesn't exist yet. Create it with 'wlogs scenes add -c {data['scene']}"
+        )
+        sys.exit(1)
 
 
 # send request to update scene word count to reflect session word count
