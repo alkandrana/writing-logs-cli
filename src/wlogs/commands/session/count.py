@@ -9,11 +9,6 @@ from wlogs.utils.crud import get_all_records, get_record_by_code, get_record_by_
 pd.set_option("display.max_rows", 100)
 
 
-def get_all_sessions() -> list[dict | None]:
-    sessions = get_all_records("sessions")
-    return sessions
-
-
 def get_one_session(code: str) -> dict[str, str | int | None]:
     session = get_record_by_code(code, "sessions")
     return session
@@ -92,7 +87,7 @@ def calc_wpm(session):
 
 
 def list_sessions(args):
-    sessions = get_all_sessions()
+    sessions = get_all_records("sessions")
     if len(sys.argv) == 1:
         print(
             "No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'"
@@ -106,6 +101,12 @@ def list_sessions(args):
         sessions = get_by_date(args.date, sessions)
     if args.today:
         date = datetime.strftime(datetime.today().astimezone(), "%Y-%m-%d")
+        sessions = get_by_date(date, sessions)
+    if args.month:
+        date = datetime.strftime(datetime.today().astimezone(), "%Y-%m")
+        sessions = get_by_date(date, sessions)
+    if args.year:
+        date = datetime.strftime(datetime.today().astimezone(), "%Y")
         sessions = get_by_date(date, sessions)
     if args.type:
         sessions = get_by_type(sessions, args.type)
@@ -129,6 +130,8 @@ def parse_count_sessions(session_subparsers):
     )
     count_parser.add_argument("--today", "-t", action="store_true")
     count_parser.add_argument("--date", "-d", required=False)
+    count_parser.add_argument("--month", "-m", required=False, action="store_true")
+    count_parser.add_argument("--year", "-y", required=False, action="store_true")
     count_parser.add_argument("--scene", "-s", required=False)
     count_parser.add_argument("--project", "-p", required=False)
     count_parser.add_argument("--count", "-c", action="store_true", required=False)
