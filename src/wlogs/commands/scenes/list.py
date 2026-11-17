@@ -27,7 +27,7 @@ def print_scene(scenelist):
 def view_one_scene(args):
     if args.code:
         criterion = f"code {args.code}"
-        scenes = get_record_by_code(args.code, "scenes")
+        scenes = [get_record_by_code(args.code, "scenes")]
     elif args.name:
         criterion = f"name {args.name}"
         scenes = get_record_by_name(args.name, "scenes")
