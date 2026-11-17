@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 
@@ -52,6 +52,26 @@ def build_session_title(session):
     return title
 
 
+def get_off_days(args):
+    sessions = [ses for ses in get_all_sessions() if ses["date"].startswith("2026-11")]
+    days = list({datetime.fromisoformat(ses["date"]).date() for ses in sessions})
+    days.sort()
+    streaks = [0]
+    off_days = 0
+    for i in range(len(days)):
+        today = days[i]
+        if i + 1 < len(days):
+            tomorrow = days[i + 1]
+        else:
+            tomorrow = datetime.now().date()
+        print(f"Index: {i} | Today: {today} | Tomorrow: {tomorrow}")
+        streaks[-1] += 1
+        if (tomorrow - today).days > 1:
+            off_days += (tomorrow - today).days
+            streaks.append(0)
+    print(f"\nStreaks: {streaks}\nDays taken off: {off_days}\n")
+
+
 def get_by_date(date, sessions):
     filtered = [s for s in sessions if s["date"].startswith(date)]
     return filtered
@@ -93,7 +113,9 @@ def calc_wpm(session):
 def list_sessions(args):
     sessions = get_all_sessions()
     if len(sys.argv) == 1:
-        print("No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'")
+        print(
+            "No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'"
+        )
         sys.exit(1)
     if args.scene:
         sessions = get_by_scene(sessions, args.scene)
@@ -118,7 +140,7 @@ def list_sessions(args):
 
     print_sessions(sessions)
 
-    
+
 def parse_count_sessions(session_subparsers):
     count_parser = session_subparsers.add_parser("count")
     count_parser.add_argument(
@@ -132,3 +154,6 @@ def parse_count_sessions(session_subparsers):
     count_parser.add_argument("--wpm", "-w", action="store_true", required=False)
     count_parser.add_argument("--type", "-tp", nargs="*")
     count_parser.set_defaults(func=list_sessions)
+
+    streak_parser = session_subparsers.add_parser("streak")
+    streak_parser.set_defaults(func=get_off_days)
