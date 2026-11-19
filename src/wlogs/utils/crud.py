@@ -103,9 +103,10 @@ def post_record(data: dict[str, str | int], endpoint: str):
         "endpoint": f"{load_config()['api_url']}/{endpoint}",
         "payload": data,
     }
+    record = data.get("code", data)
     res = send_auth_request(request)
     if res.status_code == 409:
-        print("Record already added. Skipping...")
+        print(f"Record {record} already added. Skipping...")
     elif 200 <= res.status_code < 300:
         print(f"Record successfully added:\n{data}\nProceeding...")
     else:
