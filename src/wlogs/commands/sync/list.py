@@ -24,8 +24,9 @@ def get_scenelist_records(code: str):
     scenelist_paths = get_scene_csv()
     scene_csv = [f for f in scenelist_paths if code.lower() in f.name.lower()]
     if len(scene_csv) > 1:
-        if len([f for f in scene_csv if "all" in f.name.lower()]) == 1:
-            scene_csv = next(f for f in scene_csv if "all" in f.name.lower())
+        master_scenelist = [f for f in scene_csv if "all" in f.name.lower()]
+        if len(master_scenelist) == 1:
+            scene_csv = master_scenelist[0]
         else:
             print(f"Multiple scenelists found for project {code}.")
             for i, f in enumerate(scene_csv):

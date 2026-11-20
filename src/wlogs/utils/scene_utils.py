@@ -8,6 +8,7 @@ from wlogs.commands.auth import print_error_message, send_auth_request
 
 from .crud import (
     check_record_exists,
+    get_all_records,
     get_record_by_code,
     get_record_id,
 )
@@ -86,10 +87,17 @@ def get_scene_details_from_csv(filepath: Path) -> list[dict[str, str | int]]:
     with open(filepath, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         data = [{k.lower(): v for k, v in row.items()} for row in reader]
+        return data
+
+
+def convert_local_scene(scene_list):
     scenes = []
-    for row in data:
+    for row in scene_list:
         status: str = convert_status(row["status"])
-        status_id = get_record_id(status, "status", "name")
+        status_options = get_all_records("status")
+        status_id = next(
+            (st["id"] for st in status_options if st["name"].lower() == status), None
+        )
         project = row["id"][0 : row["id"].index("-")] if "-" in row["id"] else None
         if project and check_record_exists(project, "projects"):
             project_id = get_record_id(project, "projects")
