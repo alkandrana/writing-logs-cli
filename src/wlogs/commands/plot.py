@@ -4,6 +4,7 @@ import pandas as pd
 
 from wlogs import load_config
 from wlogs.commands.auth import send_auth_request
+from wlogs.utils.crud import print_error_message
 
 pd.set_option("display.max_rows", 100)
 
@@ -20,7 +21,7 @@ def get_plotter(book_code):
         print("Book not found.")
         sys.exit(1)
     else:
-        print(f"Error: {res.status_code} {res.reason} {res.reason}")
+        print_error_message(res)
         sys.exit(1)
 
 

@@ -5,8 +5,7 @@ from pathlib import Path
 
 from wlogs import load_config
 from wlogs.utils.basic_utils import join_date, to_zulu
-from wlogs.utils.crud import post_record
-from wlogs.utils.scene_utils import get_scene_id
+from wlogs.utils.crud import get_record_id, post_record
 
 
 # 1. get sessions from log
@@ -24,7 +23,7 @@ def get_records_from_csv(path: str):
 
 # 2. format sessions, accounting for variations in data
 def format_local_session(ses: dict[str, str | int | None]):
-    scene_id = get_scene_id(str(ses["scene"]))
+    scene_id = get_record_id(str(ses["scene"]), "scenes")
     ses["start_time"] = join_date(str(ses["start_time"]), str(ses["date"]))
     ses["stop_time"] = join_date(str(ses["stop_time"]), str(ses["date"]))
     session = {

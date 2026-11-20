@@ -3,20 +3,15 @@ from datetime import datetime
 
 import pandas as pd
 
-from wlogs import load_config
-from wlogs.commands.auth import send_auth_request
 from wlogs.utils.basic_utils import to_local
-from wlogs.utils.crud import get_record_by_id
+from wlogs.utils.crud import get_all_records, get_record_by_code, get_record_by_id
 
 pd.set_option("display.max_rows", 100)
 
 
-def get_all_sessions():
-    request = {"method": "GET", "endpoint": f"{load_config()['api_url']}/sessions"}
-    res = send_auth_request(request)
-    sessions = res.json()
-    sessions.sort(key=lambda x: datetime.fromisoformat(x["date"]))
-    return sessions
+def get_one_session(code: str) -> dict[str, str | int | None]:
+    session = get_record_by_code(code, "sessions")
+    return session
 
 
 def print_sessions(sessions):
@@ -36,6 +31,7 @@ def print_sessions(sessions):
             "duration": round(ses["duration"]) if ses["duration"] else "",
             "wpm": round(ses["wpm"]) if ses["wpm"] else "",
             "type": ses["type"],
+            "comments": ses["comments"],
         }
         for ses in sessions
     ]
@@ -91,9 +87,11 @@ def calc_wpm(session):
 
 
 def list_sessions(args):
-    sessions = get_all_sessions()
+    sessions = get_all_records("sessions")
     if len(sys.argv) == 1:
-        print("No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'")
+        print(
+            "No valid filter found. If you want to see data for all sessions, use 'wlogs session count -a/--all'"
+        )
         sys.exit(1)
     if args.scene:
         sessions = get_by_scene(sessions, args.scene)
@@ -102,7 +100,13 @@ def list_sessions(args):
     if args.date:
         sessions = get_by_date(args.date, sessions)
     if args.today:
-        date = datetime.strftime(datetime.today(), "%Y-%m-%d")
+        date = datetime.strftime(datetime.today().astimezone(), "%Y-%m-%d")
+        sessions = get_by_date(date, sessions)
+    if args.month:
+        date = datetime.strftime(datetime.today().astimezone(), "%Y-%m")
+        sessions = get_by_date(date, sessions)
+    if args.year:
+        date = datetime.strftime(datetime.today().astimezone(), "%Y")
         sessions = get_by_date(date, sessions)
     if args.type:
         sessions = get_by_type(sessions, args.type)
@@ -118,7 +122,7 @@ def list_sessions(args):
 
     print_sessions(sessions)
 
-    
+
 def parse_count_sessions(session_subparsers):
     count_parser = session_subparsers.add_parser("count")
     count_parser.add_argument(
@@ -126,6 +130,8 @@ def parse_count_sessions(session_subparsers):
     )
     count_parser.add_argument("--today", "-t", action="store_true")
     count_parser.add_argument("--date", "-d", required=False)
+    count_parser.add_argument("--month", "-m", required=False, action="store_true")
+    count_parser.add_argument("--year", "-y", required=False, action="store_true")
     count_parser.add_argument("--scene", "-s", required=False)
     count_parser.add_argument("--project", "-p", required=False)
     count_parser.add_argument("--count", "-c", action="store_true", required=False)

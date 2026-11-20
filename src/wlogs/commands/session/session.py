@@ -6,14 +6,14 @@ from pathlib import Path
 
 from wlogs import get_store_path, load_config
 from wlogs.utils.basic_utils import print_dict, to_zulu
-from wlogs.utils.scene_utils import (
+from wlogs.utils.crud import (
     build_patch,
-    get_scene_by_id,
-    get_scene_id,
+    get_record_by_id,
+    get_record_id,
+    post_record,
     send_update_request,
 )
-from wlogs.utils.session_utils import post_session
-from wlogs.utils.status_utils import get_status_id, get_status_name
+from wlogs.utils.status_utils import get_status_name
 
 
 # Construct dict of starting session data
@@ -50,7 +50,7 @@ def build_session(args):
     if path.exists():
         with open(path, "r") as f:
             data = json.load(f)
-        if not "stop_time" in data:
+        if "stop_time" not in data:
             data["stop_time"] = datetime.isoformat(datetime.now().astimezone())
         if "start_words" in data:
             data["words"] = int(args.words) - int(data["start_words"])
@@ -123,33 +123,46 @@ def save_local(data):
 
 # format constructed session as payload to send to API
 def convert_to_session(data):
-    scene_id = get_scene_id(data["scene"])
-    # update scene status if scene hadn't been started yet
-    scene = get_scene_by_id(scene_id)
-    if get_status_name(int(scene["statusId"])).lower() == "pending":
-        status_update = build_patch("statusId", get_status_id("writing"))
-        send_update_request([status_update], scene_id)
-    return {
-        "date": data["date"],
-        "startTime": to_zulu(data["start_time"])
-        if data["start_time"]
-        else data["start_time"],
-        "stopTime": to_zulu(data["stop_time"])
-        if data["stop_time"]
-        else data["stop_time"],
-        "words": data["words"],
-        "sceneId": scene_id,
-        "type": data["type"],
-    }
+    scene_id = get_record_id(data["scene"], "scenes")
+    if scene_id:
+        # update scene status if scene hadn't been started yet
+        scene = get_record_by_id(scene_id, "scenes")
+        if (
+            scene["statusId"]
+            and get_status_name(int(scene["statusId"])).lower() == "pending"
+        ):
+            status_id = get_record_id("writing", "status", "name")
+            if not status_id:
+                print("Status writing could not be found.")
+                sys.exit(1)
+            status_update = build_patch("statusId", status_id)
+            send_update_request([status_update], "scenes", scene_id)
+        return {
+            "date": data["date"],
+            "startTime": to_zulu(data["start_time"])
+            if data["start_time"]
+            else data["start_time"],
+            "stopTime": to_zulu(data["stop_time"])
+            if data["stop_time"]
+            else data["stop_time"],
+            "words": data["words"],
+            "sceneId": scene_id,
+            "type": data["type"],
+        }
+    else:
+        print(
+            f"That scene doesn't exist yet. Create it with 'wlogs scenes add -c {data['scene']}"
+        )
+        sys.exit(1)
 
 
 # send request to update scene word count to reflect session word count
 def update_scene_count(scene_id: int, words: int, type: str):
-    scene = get_scene_by_id(scene_id)
+    scene = get_record_by_id(scene_id, "scenes")
     if "draft" in type.lower():
-        words += int(scene["words"])
+        words += int(scene["words"]) if scene["words"] else 0
     payload = [build_patch("words", words)]
-    send_update_request(payload, scene_id)
+    send_update_request(payload, "scenes", scene_id)
 
 
 # start session command
@@ -172,10 +185,17 @@ def stop(args):
 
 
 def end_scene(scene_code):
-    scene_id = get_scene_id(scene_code)
-    status_id = get_status_id("finished")
-    status_update = [build_patch("statusId", status_id)]
-    send_update_request(status_update, scene_id)
+    scene_id = get_record_id(scene_code, "scenes")
+    if scene_id:
+        status_id = get_record_id("finished", "status", "name")
+        if not status_id:
+            print("Status 'finished' could not be found.")
+            sys.exit(1)
+        status_update = [build_patch("statusId", status_id)]
+        send_update_request(status_update, "scenes", scene_id)
+    else:
+        print(f"An error occurred: scene {scene_code} could not be found.")
+        sys.exit(1)
 
 
 # save session (retroactively) command
@@ -198,16 +218,12 @@ def save_session(data: dict[str, str | int]):
     session["code"] = session_id
     data["id"] = session_id
     print(f"Session to save: {data}")
-    res = post_session(session)
-    if 200 <= res.status_code < 300:
-        save_local(data)
-        update_scene_count(
-            int(session["sceneId"]), int(session["words"]), str(data["type"])
-        )
-        print(f"Scene count updated for scene {data['scene']}")
-    else:
-        print("Unable to save session to API.")
-        sys.exit(1)
+    post_record(session, "sessions")
+    save_local(data)
+    update_scene_count(
+        int(session["sceneId"]), int(session["words"]), str(data["type"])
+    )
+    print(f"Scene count updated for scene {data['scene']}")
 
 
 # # experiment: get session details from Novelwriter session json file for saving to the api/local file

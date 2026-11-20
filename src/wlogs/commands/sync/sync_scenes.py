@@ -1,6 +1,6 @@
 import sys
 
-from wlogs.utils.crud import check_record_exists
+from wlogs.utils.crud import check_record_exists, get_record_id, post_record
 from wlogs.utils.log_utils import (
     check_sync_projects,
     check_sync_scenes,
@@ -9,14 +9,11 @@ from wlogs.utils.log_utils import (
 )
 from wlogs.utils.project_utils import (
     get_project_details,
-    get_project_id,
-    post_project,
 )
 from wlogs.utils.scene_utils import (
     get_csv_path,
     get_scene_details,
     get_scene_details_from_csv,
-    post_scene,
 )
 
 
@@ -39,7 +36,7 @@ def sync_log_projects():
             if not project:
                 print(f"No project details found for project {p.upper()}")
                 project = get_project_details(p)
-            post_project(project)
+            post_record(project, "projects")
         print(f"Synced projects: {projects_to_add}")
     else:
         print("ALl projects are already synced.")
@@ -60,8 +57,8 @@ def sync_log_scenes():
         codes_to_add: list[str] = scenes_to_add[proj]
         if not check_record_exists(proj, "projects"):
             project = get_project_details(proj)
-            post_project(project)
-        project_id = get_project_id(proj)
+            post_record(project, "projects")
+        project_id = get_record_id(proj, "projects")
         for i, sc in enumerate(codes_to_add):
             print(f"Creating scene {i + 1} of {len(codes_to_add)}")
             code = f"{proj}-{sc}"
@@ -69,17 +66,19 @@ def sync_log_scenes():
                 sc for sc in scene_details if str(sc["code"]).lower() == code.lower()
             ]
             if len(results) > 1:
-                print(f"Scene code {code} is not unique. Please check scene list for corrupted data.")
+                print(
+                    f"Scene code {code} is not unique. Please check scene list for corrupted data."
+                )
                 sys.exit(1)
             elif len(results) < 1:
                 print(f"Scene code {code} not found in file.")
-                project_id = get_project_id(proj)
+                project_id = get_record_id(proj, "projects")
                 scene = {"code": code, "projectId": project_id}
                 get_scene_details(scene)
-                post_scene(scene)
+                post_record(scene, "scenes")
             else:
                 scene = results[0]
-                post_scene(scene)
+                post_record(scene, "scenes")
     print(f"Synced scenes: {scenes_to_add}")
 
 

@@ -1,21 +1,20 @@
-from wlogs.utils.crud import get_patch_payload
-from wlogs.utils.project_utils import build_project_patch, patch_project
+from wlogs.utils.crud import build_patch, get_record_id, send_update_request
 
 
 def update_project(args):
     payload = []
+    project_id = get_record_id(args.code, "projects")
     if args.goal:
-        payload.append(get_patch_payload(args.goal, "/goal"))
+        payload.append(build_patch("goal", args.goal))
     elif args.series:
-        payload.append(get_patch_payload(args.series, "/series"))
+        payload.append(build_patch("/series", args.series))
     elif args.title:
-        payload.append(get_patch_payload(args.title, "/title"))
+        payload.append(build_patch("/title", args.title))
     print("Ready to patch: ", payload)
-    request = build_project_patch(payload, args.book)
-    print("Patch request: ", request)
+    print("Patch request: ", payload)
     c = input("Proceed with update? (y/n): ")
     if c.lower() == "y":
-        patch_project(request)
+        send_update_request(payload, "projects", project_id)
 
 
 def parse_update_project(project_subparsers):

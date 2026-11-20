@@ -1,5 +1,6 @@
 from .count import parse_count_sessions
 from .session import parse_create_session
+from .update import parse_update_session
 
 
 def parse_session(subparsers):
@@ -7,3 +8,4 @@ def parse_session(subparsers):
     session_subparsers = session_parser.add_subparsers(dest="subcommand")
     parse_create_session(session_subparsers)
     parse_count_sessions(session_subparsers)
+    parse_update_session(session_subparsers)
