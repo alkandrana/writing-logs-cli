@@ -4,13 +4,12 @@ from pathlib import Path
 from typing import Any
 
 from wlogs import load_config
-from wlogs.commands.auth import send_auth_request
+from wlogs.commands.auth import print_error_message, send_auth_request
 
 from .crud import (
     check_record_exists,
     get_record_by_code,
     get_record_id,
-    print_error_message,
 )
 
 
