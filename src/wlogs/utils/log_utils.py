@@ -73,7 +73,6 @@ def check_sync_scenes(projects: dict[str, list[str]]):
     scenes_to_create: dict[str, list[str]] = {}
     remote_scenes = get_all_records("scenes")
     for key, value in projects.items():
-        print(f"Checking scenes for project {key}")
         for code in value:
             if not any(
                 sc
