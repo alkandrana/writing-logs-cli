@@ -49,7 +49,7 @@ def get_manual_scenes(
     for sc in codes:
         # check if corresponding scene record exists
         record_exists = any(
-            str(s.get("code")).lower() == f"{project_code.lower()}-{sc.lower()}"
+            str(s["id"]).lower() == f"{project_code.lower()}-{sc.lower()}"
             for s in scene_records
         )
         # if no record is found, add that scene to list of manual scenes
@@ -97,6 +97,8 @@ def print_all_scenes(args):
                 print(
                     f"{proj.upper()} scenes that need to be manually created: {manual_scenes}"
                 )
+            else:
+                print(f"All {proj.upper()} scenes can be automatically created!")
     print()
 
 

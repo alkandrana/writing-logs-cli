@@ -90,31 +90,32 @@ def get_scene_details_from_csv(filepath: Path) -> list[dict[str, str | int]]:
         return data
 
 
-def convert_local_scene(scene_list):
-    scenes = []
-    for row in scene_list:
-        status: str = convert_status(row["status"])
-        status_options = get_all_records("status")
-        status_id = next(
-            (st["id"] for st in status_options if st["name"].lower() == status), None
-        )
-        project = row["id"][0 : row["id"].index("-")] if "-" in row["id"] else None
-        if project and check_record_exists(project, "projects"):
-            project_id = get_record_id(project, "projects")
-        else:
-            project_id = 0
-        scene = {
-            "code": row["id"],
-            "sequence": row["sequence"] if row["sequence"] else 0,
-            "name": row["name"],
-            "words": row["words"] if row["words"] else 0,
-            "plotline": row["plotline"],
-            "statusId": status_id,
-            "chapter": row.get("chapter", None),
-            "projectId": project_id,
-        }
-        scenes.append(scene)
-    return scenes
+def convert_local_scene(local_scene):
+    status: str = convert_status(local_scene["status"])
+    status_options = get_all_records("status")
+    status_id = next(
+        (st["id"] for st in status_options if st["name"].lower() == status), None
+    )
+    project = (
+        local_scene["id"][0 : local_scene["id"].index("-")]
+        if "-" in local_scene["id"]
+        else None
+    )
+    if project and check_record_exists(project, "projects"):
+        project_id = get_record_id(project, "projects")
+    else:
+        project_id = 0
+    scene = {
+        "code": local_scene["id"],
+        "sequence": local_scene["sequence"] if local_scene["sequence"] else 0,
+        "name": local_scene["name"],
+        "words": local_scene["words"] if local_scene["words"] else 0,
+        "plotline": local_scene["plotline"],
+        "statusId": status_id,
+        "chapter": local_scene.get("chapter", None),
+        "projectId": project_id,
+    }
+    return scene
 
 
 def convert_status(status: str) -> str:
