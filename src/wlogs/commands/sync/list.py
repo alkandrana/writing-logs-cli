@@ -84,7 +84,6 @@ def print_all_scenes(args):
     # Check list of scene codes for scenes that do not exist in the database
     print("Checking for scenes that need to be synced...")
     scenes_to_create: dict[str, list[str]] = check_sync_scenes(projects)
-    print("Scenes that need to be synced: ")
 
     # Find scene codes that don't exist in the database, check for corresponding records in csv file, and print the results
     print()
@@ -92,6 +91,7 @@ def print_all_scenes(args):
         if len(scene_codes) > 0 and proj not in unlisted_projects:
             # find the csv file corresponding to the project code and load its scene records
             scenes = get_scenelist_records(proj)
+            print(f"{proj.upper()} scenes that need to be synced: {scene_codes}")
             manual_scenes = get_manual_scenes(proj, scene_codes, scenes)
             if len(manual_scenes) > 0:
                 print(
