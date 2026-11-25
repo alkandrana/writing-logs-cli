@@ -8,6 +8,7 @@ from wlogs.utils.log_utils import (
     get_projects_from_scenes,
 )
 from wlogs.utils.scene_utils import get_scene_details_from_csv
+from .sync_sessions import get_records_from_csv, check_sync_sessions
 
 
 def get_unlisted_projects(item_list: list[str]):
@@ -99,6 +100,19 @@ def print_all_scenes(args):
                 )
             else:
                 print(f"All {proj.upper()} scenes can be automatically created!")
+    print()
+
+    # Find sessions that are not in the database
+    print("Checking for sessions that need to be synced...\n")
+    local_sessions = get_records_from_csv(load_config()["log_file"])
+    sessions_to_create = check_sync_sessions(local_sessions)
+    print(f"\nFound {len(sessions_to_create)} sessions that need to be synced:\n")
+    if len(sessions_to_create) > 0:
+        print(
+            f"Sessions that need to be synced: {[ses['id'] for ses in sessions_to_create]}"
+        )
+    else:
+        print("All sessions are already synced!")
     print()
 
 
