@@ -2,13 +2,15 @@ from pathlib import Path
 
 from wlogs import load_config
 from wlogs.utils.log_utils import (
+    check_project_list,
     check_sync_projects,
     check_sync_scenes,
-    check_project_list,
     get_projects_from_scenes,
+    get_scenes_in_log,
 )
 from wlogs.utils.scene_utils import get_scene_details_from_csv
-from .sync_sessions import get_records_from_csv, check_sync_sessions
+
+from .sync_sessions import check_sync_sessions, get_records_from_csv
 
 
 def get_unlisted_projects(item_list: list[str]):
@@ -61,11 +63,16 @@ def get_manual_scenes(
 
 def print_all_scenes(args):
     # returns a dictionary of project codes + scene lists
-    projects = get_projects_from_scenes()
+    scenes = get_scenes_in_log()
+    projects = get_projects_from_scenes(scenes)
     if args.summarize:
         for proj in projects:
-            print(f"Scenes for project: {proj.upper()}")
-            print(projects[proj])
+            print()
+            scenes_in_proj = [sc for sc in scenes if sc.startswith(proj)]
+            print(f"{len(scenes_in_proj)} scenes in project {proj.upper()}")
+            choice = input(f"View all scenes in project {proj.upper()}? (y/n): ")
+            if choice.lower() == "y":
+                print(scenes_in_proj)
 
     # Get list of projects that do not exist in the database
     print("Checking for projects that need to be synced...")
@@ -84,16 +91,17 @@ def print_all_scenes(args):
 
     # Check list of scene codes for scenes that do not exist in the database
     print("Checking for scenes that need to be synced...")
-    scenes_to_create: dict[str, list[str]] = check_sync_scenes(projects)
+    scenes_to_create = check_sync_scenes(scenes)
 
     # Find scene codes that don't exist in the database, check for corresponding records in csv file, and print the results
     print()
-    for proj, scene_codes in scenes_to_create.items():
-        if len(scene_codes) > 0 and proj not in unlisted_projects:
+    for proj in projects_to_create:
+        scenes_in_proj = [sc for sc in scenes_to_create if sc.startswith(proj)]
+        if len(scenes_in_proj) > 0 and proj not in unlisted_projects:
             # find the csv file corresponding to the project code and load its scene records
-            scenes = get_scenelist_records(proj)
-            print(f"{proj.upper()} scenes that need to be synced: {scene_codes}")
-            manual_scenes = get_manual_scenes(proj, scene_codes, scenes)
+            scene_records = get_scenelist_records(proj)
+            print(f"{proj.upper()} scenes that need to be synced: {scenes_in_proj}")
+            manual_scenes = get_manual_scenes(proj, scenes_in_proj, scene_records)
             if len(manual_scenes) > 0:
                 print(
                     f"{proj.upper()} scenes that need to be manually created: {manual_scenes}"

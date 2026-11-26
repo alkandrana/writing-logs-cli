@@ -4,8 +4,8 @@ from pathlib import Path
 
 from wlogs import load_config
 
-from .crud import check_record_exists, get_all_records
-from .scene_utils import split_compound_id, get_scenes_by_project
+from .crud import get_all_records
+from .scene_utils import split_compound_id
 
 
 def get_scenes_in_log():
@@ -22,22 +22,18 @@ def get_scenes_in_log():
 
 
 # 2. using the resultant list of scenes, get all projects referenced
-def get_projects_from_scenes() -> dict[str, list[str]]:
-    scene_codes = get_scenes_in_log()
-    booklist = {}
-    for scene in scene_codes:
-        code_parts = split_compound_id(scene)  # returns a dictionary
-        if not "project" in code_parts:
-            print(f"Project not found for scene: {scene}")
-        else:
-            proj = code_parts["project"].lower()
-            if proj not in booklist:
-                booklist[proj] = []
-            booklist[proj].append(code_parts["scene"].lower())
+def get_projects_from_scenes(scene_codes) -> list[str]:
+    booklist = list(
+        {
+            split_compound_id(sc)["project"]
+            for sc in scene_codes
+            if split_compound_id(sc)
+        }
+    )
     return booklist
 
 
-def check_sync_projects(projects: dict[str, list[str]]) -> list[str]:
+def check_sync_projects(projects: list[str]) -> list[str]:
     projects_to_create = []
     remote_projects = get_all_records("projects")
     for proj in projects:
@@ -69,18 +65,10 @@ def check_project_list(projects: list[str]):
     return manual_projects
 
 
-def check_sync_scenes(projects: dict[str, list[str]]):
-    scenes_to_create: dict[str, list[str]] = {}
+def check_sync_scenes(scene_list: list[str]) -> list[str]:
+    scenes_to_create = []
     remote_scenes = get_all_records("scenes")
-    for key, value in projects.items():
-        for code in value:
-            if not any(
-                sc
-                for sc in remote_scenes
-                if sc["code"].lower() == f"{key}-{code}".lower()
-            ):
-                if key not in scenes_to_create:
-                    scenes_to_create[key] = []
-                if code not in scenes_to_create[key]:
-                    scenes_to_create[key].append(code)
+    for scene in scene_list:
+        if not any(sc for sc in remote_scenes if sc["code"].lower() == scene.lower()):
+            scenes_to_create.append(scene)
     return scenes_to_create
