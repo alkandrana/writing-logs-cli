@@ -52,6 +52,12 @@ def build_session_title(session):
     return title
 
 
+def get_writing_days(sessions):
+    month_data = [ses for ses in sessions if ses["date"].startswith("2026-11")]
+    writing_days = list({datetime.fromisoformat(ses["date"]).day for ses in month_data})
+    return writing_days
+
+
 def get_off_days(args):
     sessions = [ses for ses in get_all_sessions() if ses["date"].startswith("2026-11")]
     days = list({datetime.fromisoformat(ses["date"]).date() for ses in sessions})
@@ -64,11 +70,13 @@ def get_off_days(args):
             tomorrow = days[i + 1]
         else:
             tomorrow = datetime.now().date()
-        print(f"Index: {i} | Today: {today} | Tomorrow: {tomorrow}")
         streaks[-1] += 1
         if (tomorrow - today).days > 1:
-            off_days += (tomorrow - today).days
+            off_days += (tomorrow - today).days - 1
             streaks.append(0)
+        print(
+            f"Index: {i} | Today: {today} | Tomorrow: {tomorrow} | Off Days: {off_days}"
+        )
     print(f"\nStreaks: {streaks}\nDays taken off: {off_days}\n")
 
 
