@@ -11,6 +11,7 @@ from wlogs.utils.project_utils import (
     get_project_details,
 )
 from wlogs.utils.scene_utils import (
+    convert_local_scene,
     get_csv_path,
     get_scene_details,
     get_scene_details_from_csv,
@@ -63,8 +64,9 @@ def sync_log_scenes():
             print(f"Creating scene {i + 1} of {len(codes_to_add)}")
             code = f"{proj}-{sc}"
             results = [
-                sc for sc in scene_details if str(sc["code"]).lower() == code.lower()
+                sc for sc in scene_details if str(sc["id"]).lower() == code.lower()
             ]
+            print(f"Found match for scene {code}: {results}")
             if len(results) > 1:
                 print(
                     f"Scene code {code} is not unique. Please check scene list for corrupted data."
@@ -78,7 +80,11 @@ def sync_log_scenes():
                 post_record(scene, "scenes")
             else:
                 scene = results[0]
-                post_record(scene, "scenes")
+                scene = convert_local_scene(scene)
+                print(f"Local scene {code} converted to payload: {scene}")
+                choice = input("Proceed? (y/n): ")
+                if choice.lower() == "y":
+                    post_record(scene, "scenes")
     print(f"Synced scenes: {scenes_to_add}")
 
 

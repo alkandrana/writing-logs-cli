@@ -4,8 +4,8 @@ from pathlib import Path
 
 from wlogs import load_config
 
-from .crud import check_record_exists
-from .scene_utils import split_compound_id
+from .crud import check_record_exists, get_all_records
+from .scene_utils import split_compound_id, get_scenes_by_project
 
 
 def get_scenes_in_log():
@@ -39,8 +39,9 @@ def get_projects_from_scenes() -> dict[str, list[str]]:
 
 def check_sync_projects(projects: dict[str, list[str]]) -> list[str]:
     projects_to_create = []
+    remote_projects = get_all_records("projects")
     for proj in projects:
-        if not check_record_exists(proj, "projects"):
+        if not any(p for p in remote_projects if p["code"].lower() == proj.lower()):
             projects_to_create.append(proj)
     return projects_to_create
 
@@ -70,9 +71,14 @@ def check_project_list(projects: list[str]):
 
 def check_sync_scenes(projects: dict[str, list[str]]):
     scenes_to_create: dict[str, list[str]] = {}
+    remote_scenes = get_all_records("scenes")
     for key, value in projects.items():
         for code in value:
-            if not check_record_exists(f"{key}-{code}", "scenes"):
+            if not any(
+                sc
+                for sc in remote_scenes
+                if sc["code"].lower() == f"{key}-{code}".lower()
+            ):
                 if key not in scenes_to_create:
                     scenes_to_create[key] = []
                 if code not in scenes_to_create[key]:

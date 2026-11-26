@@ -148,6 +148,7 @@ def convert_to_session(data):
             "words": data["words"],
             "sceneId": scene_id,
             "type": data["type"],
+            "comments": data["comments"],
         }
     else:
         print(
