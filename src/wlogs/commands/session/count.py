@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 
@@ -102,6 +102,11 @@ def list_sessions(args):
     if args.today:
         date = datetime.strftime(datetime.today().astimezone(), "%Y-%m-%d")
         sessions = get_by_date(date, sessions)
+    if args.yesterday:
+        date = datetime.strftime(
+            datetime.now().astimezone() - timedelta(days=1), "%Y-%m-%d"
+        )
+        sessions = get_by_date(date, sessions)
     if args.month:
         date = datetime.strftime(datetime.today().astimezone(), "%Y-%m")
         sessions = get_by_date(date, sessions)
@@ -129,6 +134,7 @@ def parse_count_sessions(session_subparsers):
         "--all", "-a", action="store_true", help="List all sessions in the database"
     )
     count_parser.add_argument("--today", "-t", action="store_true")
+    count_parser.add_argument("--yesterday", "-yd", action="store_true")
     count_parser.add_argument("--date", "-d", required=False)
     count_parser.add_argument("--month", "-m", required=False, action="store_true")
     count_parser.add_argument("--year", "-y", required=False, action="store_true")
