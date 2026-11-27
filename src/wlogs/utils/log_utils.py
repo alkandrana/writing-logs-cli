@@ -71,4 +71,5 @@ def check_sync_scenes(scene_list: list[str]) -> list[str]:
     for scene in scene_list:
         if not any(sc for sc in remote_scenes if sc["code"].lower() == scene.lower()):
             scenes_to_create.append(scene)
+    print(f"{len(scenes_to_create)} scenes are not in the remote.")
     return scenes_to_create
