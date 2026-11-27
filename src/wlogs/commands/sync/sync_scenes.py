@@ -85,9 +85,7 @@ def sync_log_scenes():
             scene_record = results[0]
             scene_record = convert_local_scene(scene_record)
             print(f"Local scene {scene_code} converted to payload: {scene_record}")
-            choice = input("Proceed? (y/n): ")
-            if choice.lower() == "y":
-                post_record(scene_record, "scenes")
+            post_record(scene_record, "scenes")
     print(f"Synced scenes: {scenes_to_add}")
 
 
@@ -102,14 +100,5 @@ def sync_log(args):
 
 
 def parse_batch_sync(sync_subparsers):
-    project_parser = sync_subparsers.add_parser("log")
-    project_parser.add_argument(
-        "--scenes",
-        "-sc",
-        action="store_true",
-        help="Sync scenes only (you will be prompted to create projects that don't already exist)",
-    )
-    project_parser.add_argument(
-        "--projects", "-p", action="store_true", help="Sync projects only."
-    )
+    project_parser = sync_subparsers.add_parser("scenes")
     project_parser.set_defaults(func=sync_log)
