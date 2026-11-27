@@ -25,6 +25,7 @@ def get_records_from_csv(path: str):
 def format_local_session(
     ses: dict[str, str | int | None], scene_repo: list[dict[str, str | int]]
 ):
+    print(f"Converting session {ses['id']}")
     scene_id = next(
         sc.get("id")
         for sc in scene_repo

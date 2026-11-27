@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from wlogs import load_config
+from wlogs.utils.file_search import fast_search
 from wlogs.utils.log_utils import (
     check_project_list,
     check_sync_projects,
@@ -8,7 +9,7 @@ from wlogs.utils.log_utils import (
     get_projects_from_scenes,
     get_scenes_in_log,
 )
-from wlogs.utils.scene_utils import get_scene_details_from_csv
+from wlogs.utils.scene_utils import get_scene_details_from_csv, split_compound_id
 
 from .sync_sessions import check_sync_sessions, get_records_from_csv
 
@@ -51,10 +52,7 @@ def get_manual_scenes(
     manual_scenes = []
     for sc in codes:
         # check if corresponding scene record exists
-        record_exists = any(
-            str(s["id"]).lower() == f"{project_code.lower()}-{sc.lower()}"
-            for s in scene_records
-        )
+        record_exists = any(str(s["id"]).lower() == sc.lower() for s in scene_records)
         # if no record is found, add that scene to list of manual scenes
         if not record_exists:
             manual_scenes.append(sc)
@@ -64,6 +62,7 @@ def get_manual_scenes(
 def print_all_scenes(args):
     # returns a dictionary of project codes + scene lists
     scenes = get_scenes_in_log()
+    print(f"Found {len(scenes)} scenes in log file.")
     projects = get_projects_from_scenes(scenes)
     if args.summarize:
         for proj in projects:
@@ -95,8 +94,12 @@ def print_all_scenes(args):
 
     # Find scene codes that don't exist in the database, check for corresponding records in csv file, and print the results
     print()
-    for proj in projects_to_create:
-        scenes_in_proj = [sc for sc in scenes_to_create if sc.startswith(proj)]
+    project_groups = list({split_compound_id(sc)["project"] for sc in scenes_to_create})
+    for proj in project_groups:
+        scenes_in_proj = [
+            sc for sc in scenes_to_create if sc.lower().startswith(proj.lower())
+        ]
+        print(f"{len(scenes_in_proj)} scenes need to be synced for project {proj}")
         if len(scenes_in_proj) > 0 and proj not in unlisted_projects:
             # find the csv file corresponding to the project code and load its scene records
             scene_records = get_scenelist_records(proj)
@@ -126,7 +129,8 @@ def print_all_scenes(args):
 
 def get_scene_csv() -> list[Path]:
     log_dir = Path(load_config()["log_file"]).parent
-    scene_csvs = [f for f in log_dir.iterdir() if "scenes" in f.name.lower()]
+    scenelist_dir = next(iter(fast_search("scenes", log_dir))).parent
+    scene_csvs = [f for f in scenelist_dir.iterdir() if "scenes" in f.name.lower()]
     return scene_csvs
 
 

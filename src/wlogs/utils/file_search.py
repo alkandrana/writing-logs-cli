@@ -19,7 +19,6 @@ def fast_search(
                 else target_filename.lower() in entry.name.lower()
             )
             if condition:
-                print(f"Found file: {entry.path}")
                 yield Path(entry.path)
             if entry.is_dir(follow_symlinks=False):
                 # Recurse into subdirectories
