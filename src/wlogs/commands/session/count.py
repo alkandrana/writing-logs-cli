@@ -112,7 +112,6 @@ def list_sessions(args):
         sessions = get_by_date(date, sessions)
     if args.year:
         date = datetime.strftime(datetime.today().astimezone(), "%Y")
-        sessions = get_by_date(date, sessions)
     if args.type:
         sessions = get_by_type(sessions, args.type)
     if args.all:
