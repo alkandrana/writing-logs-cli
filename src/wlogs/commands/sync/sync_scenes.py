@@ -1,7 +1,6 @@
 import sys
 
 from wlogs.utils.crud import (
-    get_all_records,
     post_record,
 )
 from wlogs.utils.log_utils import (
@@ -50,9 +49,7 @@ def sync_log_projects():
 
 
 def sync_log_scenes():
-    print("\nCollecting scenes referenced in log file...")
     scenes = get_scenes_in_log()
-    print("\nGetting list of scenes that need to be synced...")
     scenes_to_add = check_sync_scenes(scenes)
     projects = list(
         {
@@ -61,44 +58,36 @@ def sync_log_scenes():
             if split_compound_id(sc)
         }
     )
-    remote_projects = get_all_records("projects")
+    scenelist_paths = [get_csv_path(p) for p in projects]
+    local_scene_records = [get_scene_details_from_csv(f) for f in scenelist_paths if f]
+    local_scene_records = [sc for proj in local_scene_records for sc in proj]
     print(f"Found {len(scenes_to_add)} scenes that need to be synced.")
     choice = input("Show all? (y/n): ")
     if choice.lower() == "y":
         print(scenes_to_add)
-    for proj in projects:
-        print(f"Getting scene details for project {proj}")
-        filepath = get_csv_path(proj)
-        scene_details = get_scene_details_from_csv(filepath) if filepath else []
-        codes_to_add = [sc for sc in scenes_to_add if sc.startswith(proj)]
-        if not any(p for p in remote_projects if p["code"] == proj):
-            print(f"No project found for {proj}")
+    for i, scene_code in enumerate(scenes_to_add):
+        print(f"Creating scene {i + 1} of {len(scenes_to_add)}: {scene_code}")
+        results = [
+            sc
+            for sc in local_scene_records
+            if str(sc["id"]).lower() == scene_code.lower()
+        ]
+        if len(results) > 1:
+            print(
+                f"Scene code {scene_code} is not unique. Please check scene list for corrupted data."
+            )
             sys.exit(1)
-        project = next(p for p in remote_projects if p["code"] == proj)
-        project_id = project["id"]
-        for i, scene in enumerate(codes_to_add):
-            print(f"Creating scene {i + 1} of {len(codes_to_add)}: {scene}")
-            results = [
-                sc for sc in scene_details if str(sc["id"]).lower() == scene.lower()
-            ]
-            print(f"Found match for scene {scene}: {results}")
-            if len(results) > 1:
-                print(
-                    f"Scene code {scene} is not unique. Please check scene list for corrupted data."
-                )
-                sys.exit(1)
-            elif len(results) < 1:
-                print(f"Scene code {scene} not found in file.")
-                scene_rec = {"code": scene, "projectId": project_id}
-                get_scene_details(scene_rec)
-                post_record(scene_rec, "scenes")
-            else:
-                scene_rec = results[0]
-                scene_rec = convert_local_scene(scene_rec)
-                print(f"Local scene {scene} converted to payload: {scene_rec}")
-                choice = input("Proceed? (y/n): ")
-                if choice.lower() == "y":
-                    post_record(scene_rec, "scenes")
+        elif len(results) < 1:
+            print(f"Scene code {scene_code} not found in file.")
+            scene_record = get_scene_details(scene_code)
+            post_record(scene_record, "scenes")
+        else:
+            scene_record = results[0]
+            scene_record = convert_local_scene(scene_record)
+            print(f"Local scene {scene_code} converted to payload: {scene_record}")
+            choice = input("Proceed? (y/n): ")
+            if choice.lower() == "y":
+                post_record(scene_record, "scenes")
     print(f"Synced scenes: {scenes_to_add}")
 
 

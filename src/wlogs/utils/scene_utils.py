@@ -23,8 +23,8 @@ def split_compound_id(compound_id: str) -> dict[str, str]:
     return codes
 
 
-def get_scene_details(scene):
-    print(f"\nAdd details for scene {scene['code']}: ")
+def get_scene_details(code: str) -> dict[str, str | int]:
+    print(f"\nAdd details for scene {code}: ")
     name = input("Enter scene name/description: ")
     sequence = input(
         "Enter scene number (where in the story the scene falls; optional): "
@@ -35,16 +35,26 @@ def get_scene_details(scene):
     )
     plotline = input("Enter name of POV character for this scene (optional): ")
     chapter = input("Enter chapter title (optional): ")
-    scene["name"] = name
-    scene["plotline"] = plotline
-    scene["chapter"] = chapter
+    project_code = (
+        split_compound_id(code)["project"] if split_compound_id(code) else None
+    )
+    if not project_code:
+        project_code = input("Enter project code: ")
+    project_id = get_record_id(project_code, "projects")
+    new_scene: dict[str, str | int] = {
+        "name": name,
+        "plotline": plotline,
+        "chapter": chapter,
+    }
     try:
-        scene["sequence"] = int(sequence) if sequence else 0
-        scene["words"] = int(words) if words else 0
+        new_scene["sequence"] = int(sequence) if sequence else 0
+        new_scene["words"] = int(words) if words else 0
+        new_scene["projectId"] = project_id
     except ValueError:
         print("Scene number and words must be valid integers")
         sys.exit(1)
-    scene["statusId"] = get_record_id(status, "status", "name")
+    new_scene["statusId"] = get_record_id(status, "status", "name")
+    return new_scene
 
 
 def get_scenes_by_project(code) -> list[dict[str, Any]]:
