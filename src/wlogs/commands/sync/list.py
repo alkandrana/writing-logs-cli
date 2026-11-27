@@ -74,22 +74,22 @@ def print_all_scenes(args):
                 print(scenes_in_proj)
 
     # Get list of projects that do not exist in the database
-    print("Checking for projects that need to be synced...")
+    print("\nChecking for projects that need to be synced...")
     projects_to_create = check_sync_projects(projects)
-    print("Projects that need to be synced: ", projects_to_create)
+    print("\nProjects that need to be synced: ", projects_to_create)
 
     # Get list of projects not in projects.csv
-    print("Checking for projects that need to be manuallly created...")
+    print("\nChecking for projects that need to be manuallly created...")
     manual_projects = check_project_list(projects_to_create)
     print(f"Projects that need to be manually created: {manual_projects}")
 
     # Get list of csv scene paths and check filenames against list of project codes
-    print("Checking for csv scene lists...")
+    print("\nChecking for csv scene lists...")
     unlisted_projects = get_unlisted_projects(projects_to_create)
     print(f"Projects for which no scene list file exists: {unlisted_projects}")
 
     # Check list of scene codes for scenes that do not exist in the database
-    print("Checking for scenes that need to be synced...")
+    print("\nChecking for scenes that need to be synced...")
     scenes_to_create = check_sync_scenes(scenes)
 
     # Find scene codes that don't exist in the database, check for corresponding records in csv file, and print the results
@@ -99,16 +99,22 @@ def print_all_scenes(args):
         scenes_in_proj = [
             sc for sc in scenes_to_create if sc.lower().startswith(proj.lower())
         ]
-        print(f"{len(scenes_in_proj)} scenes need to be synced for project {proj}")
+        print(f"\n{len(scenes_in_proj)} scenes need to be synced for project {proj}")
+        choice = input("Show all? (y/n): ")
+        if choice.lower() == "y":
+            print(scenes_in_proj)
         if len(scenes_in_proj) > 0 and proj not in unlisted_projects:
             # find the csv file corresponding to the project code and load its scene records
             scene_records = get_scenelist_records(proj)
-            print(f"{proj.upper()} scenes that need to be synced: {scenes_in_proj}")
             manual_scenes = get_manual_scenes(proj, scenes_in_proj, scene_records)
             if len(manual_scenes) > 0:
                 print(
-                    f"{proj.upper()} scenes that need to be manually created: {manual_scenes}"
+                    f"{len(manual_scenes)} scenes that need to be manually created for project {proj}:"
                 )
+                choice = input("Show all? (y/n): ")
+                if choice.lower() == "y":
+                    print(manual_scenes)
+
             else:
                 print(f"All {proj.upper()} scenes can be automatically created!")
     print()
@@ -118,10 +124,11 @@ def print_all_scenes(args):
     local_sessions = get_records_from_csv(load_config()["log_file"])
     sessions_to_create = check_sync_sessions(local_sessions)
     print(f"\nFound {len(sessions_to_create)} sessions that need to be synced:\n")
+
     if len(sessions_to_create) > 0:
-        print(
-            f"Sessions that need to be synced: {[ses['id'] for ses in sessions_to_create]}"
-        )
+        choice = input("Show all? (y/n): ")
+        if choice.lower() == "y":
+            print([ses["id"] for ses in sessions_to_create])
     else:
         print("All sessions are already synced!")
     print()
