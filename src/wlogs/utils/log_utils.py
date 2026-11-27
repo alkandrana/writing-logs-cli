@@ -22,7 +22,7 @@ def get_scenes_in_log():
 
 
 # 2. using the resultant list of scenes, get all projects referenced
-def get_projects_from_scenes(scene_codes) -> list[str]:
+def get_projects_from_scenes(scene_codes: list[str]) -> list[str]:
     booklist = list(
         {
             split_compound_id(sc)["project"]
